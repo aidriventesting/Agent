@@ -3,15 +3,21 @@ from __future__ import annotations
 import ast
 import re
 from dataclasses import dataclass, field
-from typing import Any, Dict, List, Optional
-
-from src.AiHelper.utilities._logger import RobotCustomLogger
+from typing import Any, Dict, List, Optional, TypedDict
+from robot.api import logger
 
 
 _LINE_PATTERN = re.compile(r"^\s*([a-zA-Z_]+)\s+(\d+):\s*(\{.*\})\s*$")
 
 
-class OmniParserResult:
+class Icon(TypedDict):
+    type: str
+    bbox: List[float]
+    interactivity: bool
+    content: str
+
+
+class OmniParserResultProcessor:
     """
     Parse the raw OmniParser text payload into structured elements.
 
@@ -24,24 +30,25 @@ class OmniParserResult:
         *,
         response_text: str,
         image_temp_path: Optional[str] = None,
-        logger: Optional[RobotCustomLogger] = None,
     ) -> None:
-        self._logger = logger or RobotCustomLogger()
         self._image_temp_path = image_temp_path or ""
         self._elements: List[OmniParserElement] = self._parse_response(response_text)
-        self._logger.info(f"OmniParser detected {len(self._elements)} elements")
+        logger.info(f"OmniParser detected {len(self._elements)} elements")
         if self._image_temp_path:
-            self._logger.debug(f"Temporary image: {self._image_temp_path}")
+            logger.debug(f"Temporary image: {self._image_temp_path}")
         self._log_preview(limit=8)
 
-    def get_parsed_ui_elements(self, *, element_type: Optional[str] = None) -> List[Dict[str, Any]]:
+    def get_parsed_ui_elements(self, *, element_type: Optional[str] = None) -> Dict[str, Icon]:
         """
-        Return parsed elements as simple dictionaries, optionally filtered by type:
-        - "interactive" for clickable items
-        - "icon" or "text" for specific OmniParser element kinds
-        - None (default) returns every element
+        Return parsed elements keyed by their OmniParser label (whitespace removed).
+
+        Parameters
+        ----------
+        element_type: Optional[str]
+            - "interactive" for clickable items
+            - "icon" or "text" for specific OmniParser element kinds
+            - None (default) returns every element
         """
-        # Filter elements first
         if not element_type:
             filtered = self._elements
         else:
@@ -52,19 +59,18 @@ class OmniParserResult:
                 filtered = self._elements
             else:
                 filtered = [el for el in self._elements if el.element_type.lower() == element_type]
-        
-        # Convert to simple dictionaries
-        return [element.to_dict() for element in filtered]
 
-    def as_dict(self, *, element_type: Optional[str] = None) -> Dict[str, Any]:
-        """Serialize parsed elements to JSON-compatible dict."""
-        elements = self.get_parsed_ui_elements(element_type=element_type)
-        return {"elements": elements}
+        return {self._element_key(element): element.to_icon() for element in filtered}
 
     @property
     def image_temp_path(self) -> str:
         """Return the temporary image path created by Gradio (optional, for debugging/display)."""
         return self._image_temp_path
+
+    @staticmethod
+    def _element_key(element: "OmniParserElement") -> str:
+        """Build the dictionary key, ensuring the prefix (e.g. 'icon') stays untouched."""
+        return element.label.replace(" ", "")
 
     def _parse_response(self, response_text: str) -> List[OmniParserElement]:
         elements: List[OmniParserElement] = []
@@ -85,7 +91,8 @@ class OmniParserResult:
             if attributes is None:
                 continue
 
-            index = self._safe_int(index_str, fallback=len(elements))
+            # index_str is guaranteed by regex to be digits; direct cast keeps code simple
+            index = int(index_str)
             element = self._build_element(label_prefix, index, attributes)
             if element:
                 elements.append(element)
@@ -109,7 +116,8 @@ class OmniParserResult:
         attributes: Dict[str, Any],
     ) -> Optional[OmniParserElement]:
         element_type = str(attributes.get("type", "unknown"))
-        bbox = self._convert_bbox(attributes.get("bbox"))
+        raw_bbox = attributes.get("bbox", [])
+        bbox = [float(v) for v in raw_bbox] if isinstance(raw_bbox, (list, tuple)) else []
         interactivity = bool(attributes.get("interactivity", False))
         content = str(attributes.get("content", ""))
 
@@ -120,32 +128,11 @@ class OmniParserResult:
             bbox=bbox,
             interactivity=interactivity,
             content=content,
-            raw_attributes=dict(attributes),
         )
-
-    @staticmethod
-    def _convert_bbox(raw_bbox: Any) -> List[float]:
-        bbox_values: List[float] = []
-        if not isinstance(raw_bbox, (list, tuple)):
-            return bbox_values
-
-        for value in raw_bbox:
-            try:
-                bbox_values.append(float(value))
-            except (TypeError, ValueError):
-                continue
-        return bbox_values
-
-    @staticmethod
-    def _safe_int(value: Any, fallback: int) -> int:
-        try:
-            return int(value)
-        except (TypeError, ValueError):
-            return fallback
 
     def _log_preview(self, limit: int) -> None:
         if not self._elements:
-            self._logger.debug("OmniParser parsed elements preview: none")
+            logger.debug("OmniParser parsed elements preview: none")
             return
 
         preview_lines = []
@@ -155,7 +142,7 @@ class OmniParserResult:
                 f"content='{element.content}' bbox={element.bbox}"
             )
         description = "\n".join(preview_lines)
-        self._logger.debug(f"OmniParser parsed elements preview:\n{description}")
+        logger.debug(f"OmniParser parsed elements preview:\n{description}")
 
 
 
@@ -175,34 +162,23 @@ class OmniParserElement:
     bbox: List[float] = field(default_factory=list)
     interactivity: bool = False
     content: str = ""
-    raw_attributes: Dict[str, Any] = field(default_factory=dict)
 
-    def is_interactive(self) -> bool:
-        return self.interactivity
-
-    def is_text(self) -> bool:
-        return self.element_type == "text"
-
-    def is_icon(self) -> bool:
-        return self.element_type == "icon"
-
-    def to_dict(self) -> Dict[str, Any]:
-        """Return a JSON-serialisable representation."""
-        return {
-            "index": self.index,
-            "label": self.label,
-            "type": self.element_type,
-            "bbox": list(self.bbox),
-            "interactivity": self.interactivity,
-            "content": self.content,
-            "raw": dict(self.raw_attributes),
-        }
+    def to_icon(self) -> Icon:
+        """Convert the element into the lightweight Icon payload."""
+        return Icon(
+            type=self.element_type,
+            bbox=list(self.bbox),
+            interactivity=self.interactivity,
+            content=self.content,
+        )
 
 
 #quick test
 if __name__ == "__main__":
     image_temp_path = "/private/var/folders/l1/gxvwfyt94jd6_8fzsgjp802r0000gp/T/gradio/f6f4505da872c2f7cb2149f8f664901903131ef3b98ee872134bdddef76d4da0/image.webp"
-    response_text ="""icon 0: {'type': 'text', 'bbox': [0.14722222089767456, 0.02478632517158985, 0.24074074625968933, 0.04059829190373421], 'interactivity': False, 'content': '22:37'}
+    
+    response_text ="""
+icon 0: {'type': 'text', 'bbox': [0.14722222089767456, 0.02478632517158985, 0.24074074625968933, 0.04059829190373421], 'interactivity': False, 'content': '22:37'}
 icon 1: {'type': 'text', 'bbox': [0.19166666269302368, 0.11153846234083176, 0.7564814686775208, 0.1260683834552765], 'interactivity': False, 'content': 'Applications prevues pour vous'}
 icon 2: {'type': 'text', 'bbox': [0.31203705072402954, 0.30811965465545654, 0.6898148059844971, 0.32606837153434753], 'interactivity': False, 'content': 'Toutes les applications.'}
 icon 3: {'type': 'icon', 'bbox': [0.41938668489456177, 0.17028668522834778, 0.5745916366577148, 0.2660691440105438], 'interactivity': True, 'content': 'YouTube '}
@@ -247,11 +223,11 @@ icon 41: {'type': 'icon', 'bbox': [0.757146954536438, 0.019704006612300873, 0.82
 icon 42: {'type': 'icon', 'bbox': [0.9978095293045044, 0.14524270594120026, 1.0, 0.20872816443443298], 'interactivity': True, 'content': 'Stop'}
 icon 43: {'type': 'icon', 'bbox': [0.8498612642288208, 0.08329697698354721, 0.9384395480155945, 0.13700133562088013], 'interactivity': True, 'content': 'More'}"""
     
-    result = OmniParserResult(response_text=response_text)
-    elements = result.get_parsed_ui_elements(element_type="text")
+    result = OmniParserResultProcessor(response_text=response_text, image_temp_path=image_temp_path)
+    elements = result.get_parsed_ui_elements(element_type="interactive")
     
-    print("=" * 80)
-    print(f"len(elements): {len(elements)}")
+    # print("=" * 80)
+    # print(f"len(elements): {len(elements)}")
     print("=" * 80)
     print(f"elements: {elements}")
     
