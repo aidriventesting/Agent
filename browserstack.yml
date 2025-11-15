@@ -1,0 +1,43 @@
+userName: abdelkaderhassin_zMLQxY
+accessKey: LsPb6yjmavAuoxPXj1rz
+app: bs://a57904ee38c619b829d6ceffad889f1560fed39d
+platforms:
+  # - deviceName: Google Pixel 8
+  #   platformVersion: 14.0
+  #   platformName : Android
+  # - deviceName: Samsung Galaxy S23 Ultra
+  #   platformVersion: 13.0
+  #   platformName : Android
+  - deviceName: Samsung Galaxy S21
+    platformVersion: 12.0
+    platformName: Android
+  # - deviceName: Oppo Reno 6
+  #   platformVersion: 11.0
+  #   platformName: android
+  # - deviceName: Google Pixel 7
+  #   platformVersion: 13.0
+  #   platformName : Android
+  # - platformName: ios
+  #   deviceName: iPhone 14
+  #   platformVersion: 16
+  # - platformName: ios
+  #   deviceName: iPhone 13 Pro Max
+  #   platformVersion: 15
+browserstackLocal: false
+parallelsPerPlatform: 1
+buildName: local exec
+buildIdentifier: ${BUILD_NUMBER}
+projectName: Local Execution
+appiumVersion: 2.6.0
+
+
+debug: true
+networkLogs: false
+networkLogsOptions: 
+  captureContent: false
+appProfiling: false
+consoleLogs: info
+testObservability: false
+framework: robot
+locale: fr
+language: fr
