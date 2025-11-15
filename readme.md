@@ -1,23 +1,65 @@
-### Overview
-Robot Framework library providing an LLM-driven testing agent. It exposes high-level keywords to describe actions and checks in natural language; the agent then translates them into Appium (real device/emulator) and other UI interactions.
+# Robot Framework Agent
 
+Robot Framework Agent is an open-source experiment to bring intent-level, LLM-augmented automation directly into Robot Framework suites. The goal is simple: describe what should happen in natural language and let the agent turn that intent into Appium/Selenium actions, visual checks, and future autonomous behaviors. No hype—just a practical attempt to give Robot Framework a “brain” testers can actually use.
 
-### Usage (Robot Framework)
+[![RoboCon 2026 – What if Robot Framework Had a Brain](https://img.shields.io/badge/RoboCon%202026-What%20if%20Robot%20Framework%20Had%20a%20Brain-orange?style=for-the-badge)](https://www.robocon.io/agenda/helsinki#what-if-robot-framework-have-a-brain)
+
+## Project Status & Vision
+
+This repository is an ongoing exploration toward building a practical agentic toolkit for software testers.
+
+**Current focus**  
+- `Agent.Do` — interpret natural-language actions  
+- `Agent.Check` — interpret natural-language assertions
+
+Both keywords are in active development. Work is underway to make them stable, predictable, and usable on real production application.
+
+**Near-term goals**  
+- add mid-level capabilities such as locating visual/semantic elements  
+- extend `Agent.ReportBug` so legacy suites (without agentic capabilities) can file actionable reports automatically  
+- expose internal locator/vision data for debugging  
+- experiment with autonomous behaviours in controlled, test-safe ways
+
+None of this is final; the library is evolving through experiments, refactoring, and real-world usage. Contributions, critiques, and field tests are welcome.
+
+## Presented at RoboCon 2026 (Helsinki)
+
+This project will be showcased at RoboCon 2026 during the talk **“What if Robot Framework Had a Brain?”**  
+👉 https://www.robocon.io/agenda/helsinki#what-if-robot-framework-have-a-brain
+
+The session will cover the architecture behind the agent, early field results, and how intent-based keywords can help teams work at a higher abstraction level without abandoning Robot Framework’s strengths.
+
+## Support & Sponsorship
+
+If you find this work useful, inspiring, or simply want to help move agentic testing forward, you can support the project by:
+
+- sponsoring dedicated development time   
+- funding compute for VLM/LLM experimentation  
+- contributing code, test cases, or research notes
+
+This is not a finished product; it’s an open laboratory for building smarter testing tools. Any support—small or large—helps the project grow and stay independent.
+
+## Overview
+
+Robot Framework Agent exposes high-level keywords to describe actions and checks in natural language; the agent then translates them into Appium (real device/emulator) and other UI interactions.
+
+## Usage (Robot Framework)
+
 In your `.robot` file:
+
 ```robot
 *** Settings ***
-Library    AiHelper.AgentKeywords    llm_client=openai    llm_model=gpt-4o-mini
+Library    Agent    llm_client=openai    llm_model=gpt-4o-mini
 
 *** Test Cases ***
 Agent Example
     Agent.Do      accept cookies
-    Agent.Check   the screen correctly shows the card
+    Agent.Check   the screen correctly shows the Homepage
 ```
 
 ### Notes
 - Provided keywords: `Agent.Do <instruction>`, `Agent.Check <instruction>`.
 - Works with real mobile devices and BrowserStack; see more details below.
-
 
 ## Running Tests on BrowserStack
 
@@ -93,9 +135,3 @@ Agent Example
 1. Real-time monitoring: BrowserStack dashboard
 2. Test reports: Available in `log/` directory after execution
 3. Session videos: Automatically recorded and available in BrowserStack dashboard
-
-### Troubleshooting
-- Check BrowserStack status page for service issues
-- Verify network connectivity
-- Ensure correct app URL in configuration
-- Review logs in BrowserStack dashboard for detailed error messages
