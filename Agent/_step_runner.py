@@ -27,20 +27,19 @@ class AgentStepRunner:
         
     # ----------------------- Public API -----------------------
     def do(self, instruction: str) -> None:
-        logger.info(f"🚀 Starting Agent.Do with instruction: '{instruction}'")
+        logger.info(f"🚀 Starting Agent.Do: '{instruction}'")
 
         ui_candidates = self.platform.collect_ui_candidates()
-        # TODO: the final logic will be coded when we have the visual model
-        # currently we only work on locators
+        
         result = self.agent.ask_ai_do(
             instruction=instruction,
             ui_elements=ui_candidates,
             temperature=0,
         )
 
-        logger.debug("⚡ Executing action...")
-        self._execute_do(result, instruction)
-        logger.debug("✅ Agent.Do completed successfully")
+        logger.info(f"AI selected: {result}")
+        self._execute_do(result, ui_candidates, instruction)
+        logger.info("✅ Agent.Do completed")
 
     def visual_check(self, instruction: str) -> None:
         logger.info(f"👁️ Starting Agent.VisualCheck with instruction: '{instruction}'")
@@ -57,13 +56,13 @@ class AgentStepRunner:
         screenshot_base64 = self.platform.get_screenshot_base64()
         
         # Embed screenshot to Robot Framework log
-        self.platform.embed_image_to_log(screenshot_base64, message="Visual Check Screenshot")
+        self.platform.embed_image_to_log(screenshot_base64)
         logger.debug("Screenshot captured and sent to AI for analysis")
         image_url = self.image_uploader.upload_from_base64(screenshot_base64)
 
         result = self.agent.ask_ai_visual_check(
             instruction=instruction,
-            image_base_or_url=image_url,
+            image_url=image_url,
             temperature=0,
         )
 
@@ -110,57 +109,41 @@ class AgentStepRunner:
                     return text
         return None
 
-    def _execute_do(self, result: Dict[str, Any], instruction: str) -> None:
+    def _execute_do(self, result: Dict[str, Any], ui_candidates: List[Dict[str, Any]], instruction: str) -> None:
         action = result.get("action")
-        locator = result.get("locator", {})
+        element_index = result.get("element_index")
         text = result.get("text")
-        candidates = result.get("candidates", []) or []
 
-        logger.debug(f"🎬 Requested action: {action}")
-        logger.debug(f"📍 Provided locator: {locator}")
-        logger.debug(f"📝 Text to input: {text}")
-        logger.debug(f"🎯 Alternative candidates: {candidates}")
+        logger.info(f"Action: {action}, Element Index: {element_index}, Text: {text}")
 
-        if action == "open":
-            logger.debug("🚪 Executing: Open Application")
-            self._run_rf_keyword("Open Application")
-            logger.debug("✅ Application opened successfully")
+        # Handle scroll action (no element needed)
+        if action == "scroll_down":
+            logger.info("Scrolling down...")
+            self._run_rf_keyword("Swipe", "50", "80", "50", "20", "500")
             return
 
-        if not locator:
-            raise AssertionError("No locator available for the action")
+        # Get element and build locator
+        if element_index is None or element_index < 1 or element_index > len(ui_candidates):
+            raise AssertionError(f"Invalid element_index: {element_index}. Must be 1-{len(ui_candidates)}")
+        
+        element = ui_candidates[element_index - 1]  # Convert 1-based to 0-based
+        rf_locator = self.platform.build_locator_from_element(element)
+        logger.info(f"Built locator: {rf_locator} from element: {element}")
 
-        rf_locator = self.platform.to_rf_locator(locator)
-        logger.debug(f"🎯 Converted Robot Framework locator: {rf_locator}")
-
+        # Execute action
         if action == "tap":
-            logger.debug(f"👆 Executing: Click Element with locator '{rf_locator}'")
             self._run_rf_keyword("Click Element", rf_locator)
-            logger.debug("✅ Element clicked successfully")
             return
 
-        if action == "type":
-            if text is None:
+        if action == "input":
+            if not text:
                 text = self._extract_text_from_instruction(instruction)
-                if text is None:
-                    raise AssertionError("Agent.Do 'type' requires 'text'")
-                logger.debug(f"📝 Text automatically extracted from instruction: '{text}'")
-            logger.debug(f"⌨️ Executing: Input Text '{text}' into locator '{rf_locator}'")
-            self._run_rf_keyword("Input Text", rf_locator, text)
-            logger.debug("✅ Text entered successfully")
-            return
-
-        if action == "clear":
-            logger.debug(f"🧹 Executing: Clear Text for locator '{rf_locator}'")
+                if not text:
+                    raise AssertionError("'input' action requires text")
             self._run_rf_keyword("Clear Text", rf_locator)
-            logger.debug("✅ Text cleared successfully")
+            self._run_rf_keyword("Input Text", rf_locator, text)
             return
 
-        if action == "swipe":
-            logger.error("🚫 Action 'swipe' not yet implemented")
-            raise AssertionError("Swipe not yet implemented in Agent.Do")
-
-        logger.error(f"🚫 Unsupported action: {action}")
         raise AssertionError(f"Unsupported action: {action}")
 
     def _execute_visual_check(self, result: Dict[str, Any]) -> None:

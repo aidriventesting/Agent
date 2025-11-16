@@ -1,120 +1,112 @@
-from typing import Any, Dict, List, Optional
-
+from typing import Any, Dict, List
 import xml.etree.ElementTree as ET
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
 
-from robot.api import logger
 
 class DeviceConnector:
-    """Single-file Appium facade: UI XML, candidates, locators, screenshots."""
+    """Appium connector for UI operations (Android + iOS)."""
 
-    # ---- Driver helpers ----
     def _get_driver(self) -> Any:
         appium_lib = BuiltIn().get_library_instance('AppiumLibrary')
         return appium_lib._current_application()
 
-    # ---- UI & parsing ----
+    def get_platform(self) -> str:
+        """Detect platform from driver capabilities."""
+        caps = self._get_driver().capabilities
+        platform = caps.get('platformName', '').lower()
+        return 'ios' if 'ios' in platform else 'android'
+
     def get_ui_xml(self) -> str:
         return self._get_driver().page_source
 
     def parse_ui(self, ui_xml: str, max_items: int = 20) -> List[Dict[str, Any]]:
-        candidates: List[Dict[str, Any]] = []
-        try:
-            root = ET.fromstring(ui_xml)
+        root = ET.fromstring(ui_xml)
+        platform = self.get_platform()
+        candidates = []
 
-            def walk(node: Any, depth: int = 0, max_depth: int = 12) -> None:
-                if depth > max_depth:
-                    return
-
-                attrs: Dict[str, Any] = {
+        def walk(node: Any) -> None:
+            # Normalize attributes for both platforms
+            if platform == 'ios':
+                attrs = {
+                    'text': node.get('value', '') or node.get('label', ''),
+                    'resource_id': node.get('name', ''),
+                    'class_name': node.get('type', ''),
+                    'content_desc': node.get('label', ''),
+                    'clickable': node.get('enabled', 'false') == 'true',
+                    'enabled': node.get('enabled', 'false') == 'true',
+                }
+            else:  # android
+                attrs = {
                     'text': node.get('text', ''),
                     'resource_id': node.get('resource-id', ''),
                     'class_name': node.get('class', ''),
                     'content_desc': node.get('content-desc', ''),
-                    'package': node.get('package', ''),
-                    'clickable': node.get('clickable', 'false').lower() == 'true',
-                    'enabled': node.get('enabled', 'false').lower() == 'true',
-                    'bounds': node.get('bounds', ''),
-                    'index': node.get('index', ''),
+                    'clickable': node.get('clickable', 'false') == 'true',
+                    'enabled': node.get('enabled', 'false') == 'true',
                 }
+            
+            if attrs['clickable'] and attrs['enabled']:
+                candidates.append(attrs)
+            
+            for child in node:
+                walk(child)
 
-                if attrs['clickable'] and attrs['enabled']:
-                    candidates.append({**attrs})
+        walk(root)
+        
+        candidates.sort(
+            key=lambda x: (bool(x.get('text')), bool(x.get('content_desc')), bool(x.get('resource_id'))),
+            reverse=True
+        )
+        logger.info(f"Platform: {platform}, Found {len(candidates)} interactive elements")
+        return candidates[:max_items]
 
-                for child in list(node):
-                    walk(child, depth + 1, max_depth)
-
-            walk(root)
-
-            def sort_key(item: Dict[str, Any]) -> int:
-                score = 0
-                if item.get('text'): score += 3
-                if item.get('content_desc'): score += 2
-                if item.get('resource_id'): score += 1
-                return score
-
-            candidates.sort(key=sort_key, reverse=True)
-            return candidates[:max_items]
-        except ET.ParseError as e:
-            self.logger.warning(f"⚠️ Erreur parsing XML: {e}")
-            return []
-        except Exception as e:
-            self.logger.error(f"❌ Erreur lors du parsing UI: {e}")
-            return []
+    def build_locator_from_element(self, element: Dict[str, Any]) -> str:
+        """Build best locator from element attributes (priority: id > accessibility > text xpath)."""
+        resource_id = element.get('resource_id')
+        content_desc = element.get('content_desc')
+        text = element.get('text')
+        class_name = element.get('class_name')
+        
+        # Priority 1: resource_id (most reliable)
+        if resource_id:
+            return f"id={resource_id}"
+        
+        # Priority 2: accessibility id
+        if content_desc:
+            return f"accessibility_id={content_desc}"
+        
+        # Priority 3: text-based xpath (mobile-safe)
+        if text:
+            return f"//*[@text='{text}']"
+        
+        # Fallback: class name
+        if class_name:
+            return f"class={class_name}"
+        
+        raise AssertionError("Cannot build locator: element has no usable attributes")
 
     def to_rf_locator(self, locator: Dict[str, Any]) -> str:
-        strategy = locator.get("strategy")
-        value = locator.get("value")
-
-        if not strategy or not value:
-            raise AssertionError("Locator doit inclure 'strategy' et 'value'")
-
-        if strategy == "id":
-            return f"id={value}"
-        if strategy == "accessibility_id":
-            return f"accessibility_id={value}"
-        if strategy == "xpath":
-            return value
-        if strategy == "class_name":
-            return f"class={value}"
-        if strategy == "android_uiautomator":
-            return f"android=uiautomator={value}"
-        if strategy == "ios_predicate":
-            return f"-ios predicate string:{value}"
-
-        self.logger.warning(f"Unknown strategy '{strategy}', returning raw value")
-        return value
-
-    def get_locator_strategies(self) -> List[str]:
-        return [
-            "id",
-            "accessibility_id",
-            "xpath",
-            "class_name",
-            "android_uiautomator",
-            "ios_predicate",
-        ]
+        """Convert locator dict to RF format (legacy support)."""
+        strategy = locator["strategy"]
+        value = locator["value"]
+        
+        locator_map = {
+            "id": f"id={value}",
+            "accessibility_id": f"accessibility_id={value}",
+            "xpath": value,
+            "class_name": f"class={value}",
+        }
+        
+        return locator_map.get(strategy, value)
 
     def collect_ui_candidates(self, max_items: int = 20) -> List[Dict[str, Any]]:
-        logger.debug("🔍 Extracting UI context...")
         xml = self.get_ui_xml()
-        xml_length = len(xml)
-        xml_preview = xml[:1000] + "..." if xml_length > 1000 else xml
-        logger.debug(f"📱 UI XML retrieved ({xml_length} characters)")
-        logger.debug(f"📋 XML preview (truncated): {xml_preview}")
-        candidates = self.parse_ui(xml, max_items=max_items)
-        logger.debug(f"🎯 Number of UI candidates extracted: {len(candidates)}")
-        for i, candidate in enumerate(candidates[:5]):
-            logger.debug(f"  Candidate {i+1}: {candidate}")
-        return candidates
+        return self.parse_ui(xml, max_items=max_items)
 
-    # ---- Screenshot helpers ----
     def get_screenshot_base64(self) -> str:
         return self._get_driver().get_screenshot_as_base64()
 
-    def embed_image_to_log(self, base64_screenshot: str, width: int = 400, message: Optional[str] = None) -> None:
-        msg = f"{message if message else ''}</td></tr><tr><td colspan=\"3\"><img src=\"data:image/png;base64, {base64_screenshot}\" width=\"{width}\"></td></tr>"
+    def embed_image_to_log(self, base64_screenshot: str, width: int = 400) -> None:
+        msg = f"</td></tr><tr><td colspan=\"3\"><img src=\"data:image/png;base64, {base64_screenshot}\" width=\"{width}\"></td></tr>"
         logger.info(msg, html=True, also_console=False)
-
-    
