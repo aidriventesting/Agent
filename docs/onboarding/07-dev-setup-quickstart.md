@@ -7,7 +7,7 @@ This is the minimal path to run the agent locally.
 - Python 3.10+
 - Robot Framework
 - A UI automation backend:
-  - **Web**: Selenium + a browser driver
+  - **Web**: Playwright + a browser driver
   - **Mobile**: Appium + real device/emulator
 - Access to an LLM provider (OpenAI/Azure/local), depending on config.
 
@@ -78,5 +78,5 @@ Artifacts location:
 - Missing API key / model name
 - Permission issues for screenshots
 
-See `06-how-we-work.md` + troubleshooting docs for details.
+See `08-how-we-work.md` + troubleshooting docs for details.
 
