@@ -19,7 +19,7 @@ class AgentKeywords:
 
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
 
-    def __init__(self, llm_client: str = "openai", llm_model: str = "gpt-4o-mini"):
+    def __init__(self, llm_client: str = "anthropic", llm_model: str = "claude-sonnet-4-5-20250929"):
         self.engine = AgentStepRunner(llm_client=llm_client, llm_model=llm_model)
 
     # ----------------------- Public RF Keywords -----------------------
