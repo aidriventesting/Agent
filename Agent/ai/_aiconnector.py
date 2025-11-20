@@ -32,7 +32,13 @@ class AiConnector:
         temperature: float = 0.0,
     ) -> Dict[str, Any]:
         messages = self.prompt.compose_visual_check_messages(instruction, image_url)
-        return self.llm.send_ai_request_and_return_response(messages, temperature)
+        tools = self.prompt.get_visual_check_tools()
+        return self.llm.send_ai_request_with_tools(
+            messages=messages,
+            tools=tools,
+            tool_choice="required",
+            temperature=temperature
+        )
 
 
 

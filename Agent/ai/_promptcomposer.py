@@ -91,19 +91,70 @@ class AgentPromptComposer:
         instruction: str,
         image_url: str,
     ) -> List[Dict[str, Any]]:
-        """Build visual check messages."""
+        """Build visual check messages using tool calling approach."""
         system_content = (
             "You are a mobile app visual verification engine. "
-            "Analyze the screenshot and verify if it matches the instruction."
+            "Analyze the screenshot and verify if it matches the instruction. "
+            "Use the verify_visual_match function to report your findings."
         )
         user_content = [
-            {"type": "text", "text": f"Verify: {instruction}\n\nRespond with JSON: {{\"verification_result\": true/false, \"confidence_score\": 0.0-1.0, \"analysis\": \"...\"}}"},
+            {"type": "text", "text": f"Verify: {instruction}"},
             {"type": "image_url", "image_url": {"url": image_url}}
         ]
         
         return [
             {"role": "system", "content": system_content},
             {"role": "user", "content": user_content}
+        ]
+
+    def get_visual_check_tools(self) -> List[Dict[str, Any]]:
+        """Return tool definitions for visual check actions."""
+        return [
+            {
+                "type": "function",
+                "function": {
+                    "name": "verify_visual_match",
+                    "description": "Report the results of visual verification against the given instruction",
+                    "parameters": {
+                        "type": "object",
+                        "properties": {
+                            "verification_result": {
+                                "type": "boolean",
+                                "description": "Whether the screenshot matches the instruction (true) or not (false)"
+                            },
+                            "confidence_score": {
+                                "type": "number",
+                                "description": "Confidence level of the verification from 0.0 (no confidence) to 1.0 (completely confident)",
+                                "minimum": 0.0,
+                                "maximum": 1.0
+                            },
+                            "analysis": {
+                                "type": "string",
+                                "description": "Detailed analysis explaining why the verification passed or failed"
+                            },
+                            "found_elements": {
+                                "type": "array",
+                                "description": "Optional list of UI elements found in the screenshot",
+                                "items": {
+                                    "type": "object",
+                                    "properties": {
+                                        "element_type": {"type": "string"},
+                                        "description": {"type": "string"},
+                                        "location": {"type": "string"},
+                                        "confidence": {"type": "number"}
+                                    }
+                                }
+                            },
+                            "issues": {
+                                "type": "array",
+                                "description": "Optional list of issues or problems found",
+                                "items": {"type": "string"}
+                            }
+                        },
+                        "required": ["verification_result", "confidence_score", "analysis"]
+                    }
+                }
+            }
         ]
 
     def _render_ui_candidates(self, ui_elements: Optional[List[Dict[str, Any]]]) -> str:

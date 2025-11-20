@@ -67,7 +67,7 @@ class AgentStepRunner:
         )
 
         logger.debug("Executing visual verification...")
-        self._execute_visual_check(result)
+        self._execute_visual_check_from_tool_calls(result)
         logger.debug("Agent.VisualCheck completed successfully")
 
     # ----------------------- Internals -----------------------
@@ -157,12 +157,30 @@ class AgentStepRunner:
         else:
             raise AssertionError(f"Unknown tool call: {function_name}")
 
-    def _execute_visual_check(self, result: Dict[str, Any]) -> None:
-        verification_result = result.get("verification_result")
-        confidence_score = result.get("confidence_score")
-        analysis = result.get("analysis")
-        found_elements = result.get("found_elements", [])
-        issues = result.get("issues", [])
+    def _execute_visual_check_from_tool_calls(self, result: Dict[str, Any]) -> None:
+        """Execute visual check from tool calls returned by the LLM."""
+        tool_calls = result.get("tool_calls", [])
+        
+        if not tool_calls:
+            logger.error("No tool calls in visual check response")
+            raise AssertionError("AI did not return any tool calls for visual verification")
+        
+        # Extract the first tool call (should be verify_visual_match)
+        tool_call = tool_calls[0]
+        function_name = tool_call["function"]["name"]
+        arguments = tool_call["function"]["arguments"]
+        
+        if function_name != "verify_visual_match":
+            raise AssertionError(f"Unexpected tool call for visual check: {function_name}")
+        
+        logger.info(f"Visual verification results: {arguments}")
+        
+        # Extract arguments
+        verification_result = arguments.get("verification_result")
+        confidence_score = arguments.get("confidence_score")
+        analysis = arguments.get("analysis")
+        found_elements = arguments.get("found_elements", [])
+        issues = arguments.get("issues", [])
 
         # Log to Robot Framework with detailed AI response
         logger.debug("=" * 80)
