@@ -1,0 +1,41 @@
+from typing import Any, Dict
+from Agent.tools.base import BaseTool, ExecutorProtocol, ToolCategory
+from robot.api import logger
+
+
+class SwipeLeftTool(BaseTool):
+    """Swipe left on the mobile screen.
+    
+    Useful for navigating carousels, image galleries, tabs, or horizontal scrolling.
+    """
+    
+    @property
+    def name(self) -> str:
+        return "swipe_left"
+    
+    @property
+    def description(self) -> str:
+        return "Swipe left on the mobile screen (for carousel, tabs, horizontal scrolling)"
+    
+    @property
+    def category(self) -> ToolCategory:
+        return ToolCategory.MOBILE
+    
+    def get_parameters_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {},
+            "required": []
+        }
+    
+    def execute(
+        self, 
+        executor: ExecutorProtocol, 
+        arguments: Dict[str, Any], 
+        context: Dict[str, Any]
+    ) -> None:
+        logger.info("👈 Swiping left...")
+        # Swipe from right (80%) to left (20%) horizontally, middle of screen vertically
+        executor.run_keyword("Swipe By Percent", 80, 50, 20, 50, "1s")
+        logger.info("✅ Swipe left completed")
+
