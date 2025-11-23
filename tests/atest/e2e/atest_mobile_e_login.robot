@@ -9,7 +9,7 @@ Test Login Success
     [Documentation]    Happy path: Successful login with valid credentials
     [Tags]    mobile    login
     Open Application With Config
-    Sleep    2s
+    Sleep    1s
     
     Agent.do    instruction=click on the LOGIN button
     Sleep    1s
@@ -21,7 +21,7 @@ Test Login Success
     Sleep    1s
     
     Agent.do    instruction=click on the LOGIN button
-    Sleep    2s
+    Sleep    1s
     
     Agent.check    instruction=verify that we are on screen that displays the text "Enter Admin"
     Sleep    1s
@@ -33,7 +33,7 @@ Test Login - Wrong Credentials
     [Documentation]    Happy path: Successful login with valid credentials
     [Tags]    mobile    login
     Open Application With Config
-    Sleep    2s
+    Sleep    1s
     
     Agent.do    instruction=click on the LOGIN button
     Sleep    1s
@@ -45,7 +45,7 @@ Test Login - Wrong Credentials
     Sleep    1s
     
     Agent.do    instruction=click on the LOGIN button
-    Sleep    2s
+    Sleep    1s
     
     Agent.check    instruction=verify that the login failed and the error message "Wrong credentials" is displayed
     Sleep    1s

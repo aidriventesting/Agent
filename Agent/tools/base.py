@@ -50,6 +50,45 @@ class BaseTool(ABC):
         """Tool category: ToolCategory.MOBILE, ToolCategory.WEB, or ToolCategory.VISUAL."""
         pass
     
+    @property
+    def works_on_locator(self) -> bool:
+        """Does this tool work with XML locator?
+        
+        Returns:
+            True: Tool can work with XML element locator
+            False: Tool doesn't work with XML locators
+        
+        Default: False (only action tools need to override)
+        """
+        return False
+    
+    @property
+    def works_on_visual(self) -> bool:
+        """Can this tool work with visual detection (coordinates)?
+        
+        Returns:
+            True: Tool can accept visual coordinates (e.g., click, tap)
+            False: Tool cannot work with coordinates alone
+        
+        Default: False (only action tools need to override)
+        """
+        return False
+    
+    @property
+    def has_visual_equivalent(self) -> bool:
+        """Does this tool have a visual equivalent?
+        
+        Returns:
+            True: This tool has a visual-based alternative (e.g., tap_element → click_visual_element)
+            False: This tool has no visual equivalent
+        
+        Default: False (only tools with visual equivalents need to override)
+        
+        Used for filtering in visual mode: exclude tools with visual equivalents,
+        keep tools without equivalents (even if they only work on locators).
+        """
+        return False
+    
     @abstractmethod
     def get_parameters_schema(self) -> Dict[str, Any]:
         """Return OpenAI function calling parameter schema."""

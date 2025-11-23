@@ -38,7 +38,8 @@ class OmniParserClient:
 
         client_kwargs: Dict[str, Any] = {}
         if self.hf_token:
-            client_kwargs["hf_token"] = self.hf_token
+            # gradio_client 2.0+ uses 'token' instead of 'hf_token'
+            client_kwargs["token"] = self.hf_token
 
         try:
             self._client = Client(self.space_id, **client_kwargs)
@@ -80,7 +81,7 @@ class OmniParserClient:
                 with tempfile.NamedTemporaryFile(delete=False, suffix=suffix) as tmp_file:
                     tmp_file.write(decoded)
                     temp_path = tmp_file.name
-                self.logger.debug(f"Created temporary image file for OmniParser: {temp_path}")
+                logger.debug(f"Created temporary image file for OmniParser: {temp_path}")
                 yield handle_file(temp_path)
                 return
 

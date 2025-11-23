@@ -22,6 +22,14 @@ class HideKeyboardTool(BaseTool):
     def category(self) -> ToolCategory:
         return ToolCategory.MOBILE
     
+    @property
+    def works_on_locator(self) -> bool:
+        return False  # Global device action
+    
+    @property
+    def works_on_visual(self) -> bool:
+        return False  # System-level action
+    
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
             "type": "object",

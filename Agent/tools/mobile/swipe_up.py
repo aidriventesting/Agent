@@ -21,6 +21,14 @@ class SwipeUpTool(BaseTool):
     def category(self) -> ToolCategory:
         return ToolCategory.MOBILE
     
+    @property
+    def works_on_locator(self) -> bool:
+        return False  # Global screen gesture
+    
+    @property
+    def works_on_visual(self) -> bool:
+        return False  # Works on viewport, not specific element
+    
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
             "type": "object",

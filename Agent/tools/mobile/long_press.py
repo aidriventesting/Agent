@@ -22,6 +22,14 @@ class LongPressTool(BaseTool):
     def category(self) -> ToolCategory:
         return ToolCategory.MOBILE
     
+    @property
+    def works_on_locator(self) -> bool:
+        return True  # Works with XML locator
+    
+    @property
+    def works_on_visual(self) -> bool:
+        return False  # AppiumLibrary keyword work on XML locator only
+    
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
             "type": "object",
