@@ -24,7 +24,12 @@ class ToolRegistry:
     def register(self, tool: BaseTool) -> None:
         """Register a tool in the registry."""
         if tool.name in self._tools:
-            logger.warn(f"Tool '{tool.name}' already registered. Overwriting.")
+            existing_tool = self._tools[tool.name]
+            # Skip silently if it's the same tool class (re-registration is normal)
+            if type(existing_tool) == type(tool):
+                return
+            # Warn only if different tool class is replacing
+            logger.warn(f"Tool '{tool.name}' already registered with different class. Overwriting.")
         
         self._tools[tool.name] = tool
         logger.info(f"✅ Registered tool: {tool.name} ({tool.category})")
@@ -62,6 +67,37 @@ class ToolRegistry:
         """
         tools = self.get_by_category(category) if category else self.get_all()
         return [tool.to_tool_spec() for tool in tools]
+    
+    def get_tools_for_mode(self, category: Union[ToolCategory, str], mode: str) -> List[BaseTool]:
+        """Get tools filtered by click_mode strategy.
+        
+        Args:
+            category: ToolCategory or string ('mobile', 'web', 'visual')
+            mode: 'xml', 'visual', or 'hybrid'
+        
+        Returns:
+            Filtered list of tools based on mode
+        """
+        all_tools = self.get_by_category(category)
+        
+        if mode == "xml":
+            # XML only: Exclude tools that ONLY work on visual (not on locator)
+            return [
+                tool for tool in all_tools 
+                if not (tool.works_on_visual and not tool.works_on_locator)
+            ]
+        
+        elif mode == "visual":
+            # Visual only: Exclude ONLY tools that have a visual equivalent
+            # Keep tools without visual equivalent (like input_text) even if they only work on locators
+            return [
+                tool for tool in all_tools
+                if not tool.has_visual_equivalent
+            ]
+        
+        else:  # hybrid
+            # Hybrid: Return ALL tools, let AI choose between equivalents
+            return all_tools
     
     def clear(self) -> None:
         """Clear all registered tools (useful for testing)."""

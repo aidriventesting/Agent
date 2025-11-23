@@ -44,17 +44,20 @@ class AgentPromptComposer:
             elif click_mode == "visual":
                 system_content += (
                     "\nFOR CLICKING: Use click_visual_element(description) - describe the element visually.\n"
-                    "You will receive a screenshot to analyze. Describe what you see (e.g., 'blue login button', 'profile icon in top right').\n"
+                    "You will receive a element list coordinates. return the coordinates of the element to interact with.\n"
                 )
             else:  # hybrid
                 system_content += (
-                    "\nFOR CLICKING - You have TWO options:\n"
-                    "1. click_element(index): Select from numbered list below - USE when element has clear ID or unique text\n"
-                    "2. click_visual_element(description): Visual description - USE for icons, images, or elements without clear identifiers\n"
+                    "\nACTION SELECTION RULES:\n"
+                    "1. FOR TEXT INPUT (instructions with 'input', 'type', 'enter', 'fill') → ALWAYS use input_text(element_index, text) with XML index\n"
+                    "2. FOR CLICKING - You have TWO options:\n"
+                    "   a. tap_element(index): Select from numbered list - USE when element has clear ID, resource-id, or unique text\n"
+                    "   b. click_visual_element(description): Visual description - USE ONLY for icons, images, or elements WITHOUT clear XML identifiers\n"
+                    "3. OTHER ACTIONS: scroll_down(), swipe_left/right/up(), long_press(index), hide_keyboard(), go_back()\n"
+                    "\nCRITICAL: input_text REQUIRES XML locator (element_index). NEVER use click_visual_element for text input actions.\n"
                 )
             
             system_content += (
-                "\nOTHER ACTIONS: input_text(index, text), scroll_down(), swipe_left/right/up(), long_press(index), hide_keyboard(), go_back()\n"
                 "\nIMPORTANT: You are working with MOBILE apps (Android/iOS), NOT web browsers."
             )
         else:
@@ -94,22 +97,11 @@ class AgentPromptComposer:
         
         Args:
             category: Tool category to retrieve ('mobile', 'web', or None for all)
-            click_mode: 'xml', 'visual', or 'hybrid' - filters click tools
+            click_mode: 'xml', 'visual', or 'hybrid' - filters tools based on capabilities
         """
-        all_tools = self.registry.get_tool_specs(category=category)
-        
-        # Filter tools based on click_mode
-        if click_mode == "xml":
-            # Exclude visual click tools
-            filtered = [t for t in all_tools if t["function"]["name"] != "click_visual_element"]
-            return filtered
-        elif click_mode == "visual":
-            # Exclude XML click tools
-            filtered = [t for t in all_tools if t["function"]["name"] != "click_element"]
-            return filtered
-        else:  # hybrid
-            # Return all tools
-            return all_tools
+        # Use registry's new filtering method
+        filtered_tools = self.registry.get_tools_for_mode(category, click_mode)
+        return [tool.to_tool_spec() for tool in filtered_tools]
 
     def compose_visual_check_messages(
         self,

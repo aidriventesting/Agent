@@ -23,11 +23,19 @@ class ClickVisualElementTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "Click on element by visual description using computer vision - works for icons, images, and elements without IDs"
+        return "Click element by VISUAL description using computer vision - USE ONLY for icons, images, or elements WITHOUT clear XML identifiers (no ID, no text)"
     
     @property
     def category(self) -> ToolCategory:
         return ToolCategory.MOBILE
+    
+    @property
+    def works_on_locator(self) -> bool:
+        return False  # Works with coordinates, not locators
+    
+    @property
+    def works_on_visual(self) -> bool:
+        return True  # Designed for visual detection
     
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {

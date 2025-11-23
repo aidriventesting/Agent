@@ -12,11 +12,23 @@ class ClickElementTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "Click on element by selecting its index from the numbered XML element list (requires element to have ID or text)"
+        return "Click element by INDEX from numbered XML list - USE ONLY when element has clear ID, resource-id, or unique text"
     
     @property
     def category(self) -> ToolCategory:
         return ToolCategory.MOBILE
+    
+    @property
+    def works_on_locator(self) -> bool:
+        return True  # Works with XML locator
+    
+    @property
+    def works_on_visual(self) -> bool:
+        return False  # Only works with XML index
+    
+    @property
+    def has_visual_equivalent(self) -> bool:
+        return True  # Has click_visual_element as visual alternative
     
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {

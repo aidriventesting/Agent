@@ -10,18 +10,18 @@ Test Long Click
     ...    currently long click is not implemented
     [Tags]    mobile    interactions    longclick
     Open Application With Config
-    Sleep    2s
-    
-    Agent.do    instruction=click on the LONG CLICK button
-    Sleep    2s
-    
-    Agent.check    instruction=verify that the Long Click screen is displayed
     Sleep    1s
     
-    Agent.do    instruction=perform a long press on an element or button
-    Sleep    2s
+    Agent.do    instruction=click on the LONG CLICK button
+    Sleep    1s
     
-    Run Keyword And Expect Error    *    Agent.check    instruction=verify the display of the text Get your password and submit button
+    Agent.check    instruction=verify that the popup "Get your password" is displayed with the email field, CANCEL button, and SUBMIT button
+    Sleep    1s
+    
+    Agent.do    instruction=click on the CANCEL button
+    Sleep    1s
+    
+    Run Keyword And Expect Error    *    Agent.check    instruction=verify that the popup "Get your password" is displayed with the email field, CANCEL button, and SUBMIT button
     Sleep    1s
     
     Close Application
