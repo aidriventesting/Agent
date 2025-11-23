@@ -1,6 +1,6 @@
 from typing import Any, Dict, List, Optional
 
-from Agent._step_runner import AgentStepRunner
+from Agent.agent_engine import AgentEngine
 from robot.api.deco import keyword
 
 
@@ -19,8 +19,17 @@ class AgentKeywords:
 
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
 
-    def __init__(self, llm_client: str = "openai", llm_model: str = "gpt-4o-mini"):
-        self.engine = AgentStepRunner(llm_client=llm_client, llm_model=llm_model)
+    def __init__(
+        self, 
+        llm_client: str = "openai", 
+        llm_model: str = "gpt-4o-mini",
+        click_mode: str = "hybrid"
+    ):
+        self.engine = AgentEngine(
+            llm_client=llm_client, 
+            llm_model=llm_model,
+            click_mode=click_mode
+        )
 
     # ----------------------- Public RF Keywords -----------------------
     def do(self, instruction: str):

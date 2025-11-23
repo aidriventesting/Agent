@@ -58,6 +58,7 @@ class DeviceConnector:
             key=lambda x: (bool(x.get('text')), bool(x.get('content_desc')), bool(x.get('resource_id'))),
             reverse=True
         )
+        logger.debug(f"🔍🔍🔍🔍🔍🔍  Candidates: {candidates}")
         logger.info(f"Platform: {platform}, Found {len(candidates)} interactive elements")
         return candidates[:max_items]
 
@@ -86,23 +87,38 @@ class DeviceConnector:
         
         raise AssertionError("Cannot build locator: element has no usable attributes")
 
-    def to_rf_locator(self, locator: Dict[str, Any]) -> str:
-        """Convert locator dict to RF format (legacy support)."""
-        strategy = locator["strategy"]
-        value = locator["value"]
-        
-        locator_map = {
-            "id": f"id={value}",
-            "accessibility_id": f"accessibility_id={value}",
-            "xpath": value,
-            "class_name": f"class={value}",
-        }
-        
-        return locator_map.get(strategy, value)
-
     def collect_ui_candidates(self, max_items: int = 20) -> List[Dict[str, Any]]:
         xml = self.get_ui_xml()
         return self.parse_ui(xml, max_items=max_items)
+    
+    def render_ui_for_prompt(self, ui_elements: List[Dict[str, Any]]) -> str:
+        """Render UI elements as numbered text list for AI prompt.
+    
+        Args:
+            ui_elements: List of UI element dicts from collect_ui_candidates()
+            
+        Returns:
+            Formatted string like:
+            1. text='Login' | id='com.app:id/login_btn'
+            2. text='Sign Up' | desc='Sign up button'
+        """
+        if not ui_elements:
+            return "(no UI elements found)"
+        
+        rendered = []
+        for i, el in enumerate(ui_elements[:20], 1):
+            parts = []
+            if el.get("text"):
+                parts.append(f"text='{el['text']}'")
+            if el.get("resource_id"):
+                parts.append(f"id='{el['resource_id']}'")
+            if el.get("content_desc"):
+                parts.append(f"desc='{el['content_desc']}'")
+            
+            line = f"{i}. {' | '.join(parts) if parts else el.get('class_name', 'unknown')}"
+            rendered.append(line)
+        
+        return "\n".join(rendered)
 
     def get_screenshot_base64(self) -> str:
         return self._get_driver().get_screenshot_as_base64()
