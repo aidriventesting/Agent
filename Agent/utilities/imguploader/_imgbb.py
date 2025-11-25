@@ -1,4 +1,3 @@
-import os
 import requests
 from typing import Optional
 from robot.api import logger
@@ -59,5 +58,6 @@ class ImgBBUploader(BaseImageUploader):
     #         full_path = os.path.abspath(file_path)
     #         self.logger.error(f"File not found: {full_path}")
     #         raise FileNotFoundError(f"File not found: {full_path}")
+
 
 
