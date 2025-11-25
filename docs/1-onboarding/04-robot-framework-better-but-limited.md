@@ -1,12 +1,12 @@
 # Robot Framework: Better but still limited
 
-Robot Framework solves many problems with raw automation code. But at scale, it still faces the same core challenges basically are related to automation frameworks theirselfs ( Appium/Selenium/Playwright etc..).
+Robot Framework solves many problems with raw automation code. Whether you're writing **tests**, **scrapers**, or **workflow automation**, RF makes it more readable and accessible. But at scale, it still faces the same core challenges (related to the underlying automation frameworks: Appium/Selenium/Playwright).
 
 ## What is Robot Framework?
 
-Robot Framework (RF) is an open-source, keyword-driven test automation framework.
+Robot Framework (RF) is an open-source, keyword-driven automation framework.
 
-You write tests in a readable format using **keywords** (reusable actions), and RF executes them via libraries written in Python/Java.
+You write automation scripts in a readable format using **keywords** (reusable actions), and RF executes them via libraries written in Python/Java.
 
 ## The same test: Before and After
 

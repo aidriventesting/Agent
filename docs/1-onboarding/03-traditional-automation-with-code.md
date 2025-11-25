@@ -1,6 +1,8 @@
 # Traditional automation with code
 
-Even with great tools like Selenium and Appium, writing E2E automation is complex and expensive. This doc shows what traditional automation looks like.
+Before understanding how the AI Test agent helps, let's see how traditional automation works (and where it fails).
+
+> **Note**: Examples focus on **testing**, but these same challenges affect **web scraping** and **general web and mobile automation**. Brittle locators, timing issues, and maintenance costs plague all UI automation.
 
 ## How traditional automation works: Locators
 
