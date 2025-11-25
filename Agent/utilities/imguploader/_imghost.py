@@ -1,4 +1,3 @@
-import os
 from typing import Optional
 import requests
 from Agent.config.config import Config
@@ -60,5 +59,6 @@ class FreeImageHostUploader(BaseImageUploader):
     #         full_path = os.path.abspath(file_path)
     #         self.logger.error(f"File not found: {full_path}")
     #         raise FileNotFoundError(f"File not found: {full_path}")
+
 
 
