@@ -42,8 +42,6 @@ class SwipeRightTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
-        logger.info("👉 Swiping right...")
         # Swipe from left (20%) to right (80%) horizontally, middle of screen vertically
         executor.run_keyword("Swipe By Percent", 20, 50, 80, 50, "1s")
-        logger.info("✅ Swipe right completed")
 

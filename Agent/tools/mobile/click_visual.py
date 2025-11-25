@@ -57,15 +57,13 @@ class ClickVisualElementTool(BaseTool):
     ) -> None:
         element_description = arguments["element_description"]
         
-        logger.info(f"🎨 Visual click on: '{element_description}'")
-        
         # Get screenshot from context
         screenshot_base64 = context.get("screenshot_base64")
         
         if not screenshot_base64:
             raise AssertionError("screenshot_base64 not provided in context for visual click")
         
-        logger.info(f"🎨 Visual click: '{element_description}'")
+        logger.debug(f"Visual click: '{element_description}'")
         
         orchestrator = OmniParserOrchestrator()
         result = orchestrator.find_element(
@@ -78,6 +76,5 @@ class ClickVisualElementTool(BaseTool):
         
         x_center, y_center = OmniParserOrchestrator.get_element_center_coordinates(result)
         
-        logger.info(f"📍 Tapping at: ({x_center}, {y_center})")
+        logger.debug(f"Tapping at coordinates: ({x_center}, {y_center})")
         executor.run_keyword("Tap", [x_center, y_center])
-        logger.info(f"✅ Visual click completed")

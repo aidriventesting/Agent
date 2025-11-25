@@ -60,9 +60,6 @@ class ClickElementTool(BaseTool):
         element = ui_candidates[element_index - 1]
         locator = executor.build_locator(element)
         
-        logger.info(f"🎯 Clicking element at index {element_index}")
-        logger.info(f"Built locator: {locator} from element: {element}")
-        
+        logger.debug(f"Built locator: {locator} from element: {element}")
         executor.run_keyword("Click", locator)
-        logger.info(f"✅ Click completed")
 

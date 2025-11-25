@@ -33,7 +33,7 @@ class OmniParserResultProcessor:
     ) -> None:
         self._image_temp_path = image_temp_path or ""
         self._elements: List[OmniParserElement] = self._parse_response(response_text)
-        logger.info(f"OmniParser detected {len(self._elements)} elements")
+        logger.debug(f"OmniParser detected {len(self._elements)} elements")
         if self._image_temp_path:
             logger.debug(f"Temporary image: {self._image_temp_path}")
         self._log_preview(limit=8)

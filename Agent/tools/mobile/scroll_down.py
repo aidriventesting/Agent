@@ -39,7 +39,5 @@ class ScrollDownTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
-        logger.info("📜 Scrolling down...")
         executor.run_keyword("Swipe By Percent", 50, 80, 50, 20, "1s")
-        logger.info("✅ Scroll down completed")
 

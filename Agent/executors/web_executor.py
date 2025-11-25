@@ -1,10 +1,8 @@
-from typing import Any, Dict
 from Agent.platforms._webconnector import WebConnectorRF
-from robot.libraries.BuiltIn import BuiltIn
-from robot.api import logger
+from Agent.executors.base_executor import BaseExecutor
 
 
-class WebExecutor:
+class WebExecutor(BaseExecutor):
     """Executor for web platform actions using Browser library.
     
     This class wraps Robot Framework Browser library keywords and provides
@@ -12,23 +10,5 @@ class WebExecutor:
     """
     
     def __init__(self, platform: WebConnectorRF) -> None:
-        self.platform = platform
-    
-    def run_keyword(self, keyword_name: str, *args: Any) -> Any:
-        """Execute a Robot Framework keyword."""
-        try:
-            args_str = " ".join([str(a) for a in args]) if args else ""
-            logger.debug(f"EXECUTING: {keyword_name} {args_str}".strip())
-            logger.info(f"▶️ RF: {keyword_name} {args_str}")
-
-            result = BuiltIn().run_keyword(keyword_name, *args)
-
-            logger.info(f"SUCCESS: {keyword_name} executed successfully")
-            return result
-        except Exception as exc:
-            raise
-    
-    def build_locator(self, element: Dict[str, Any]) -> str:
-        """Build locator from element attributes using platform connector."""
-        return self.platform.build_locator_from_element(element)
+        super().__init__(platform)
 

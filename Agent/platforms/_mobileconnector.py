@@ -109,8 +109,7 @@ class DeviceConnector:
             key=lambda x: (bool(x.get('text')), bool(x.get('content_desc')), bool(x.get('resource_id'))),
             reverse=True
         )
-        logger.debug(f"🔍🔍🔍🔍🔍🔍  Candidates: {candidates}")
-        logger.info(f"Platform: {platform}, Found {len(candidates)} interactive elements")
+        logger.debug(f"Platform: {platform}, Found {len(candidates)} interactive elements")
         return candidates[:max_items]
 
     def build_locator_from_element(self, element: Dict[str, Any]) -> str:

@@ -39,7 +39,5 @@ class ScrollUpTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
-        logger.info("📜 Scrolling up...")
         executor.run_keyword("Scroll By", None, "-height")
-        logger.info("✅ Scroll up completed")
 

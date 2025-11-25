@@ -78,14 +78,14 @@ class GeminiClient(BaseLLMClient):
 
             if hasattr(response, "usage_metadata") and response.usage_metadata:
                 total_tokens = response.usage_metadata.prompt_token_count + response.usage_metadata.candidates_token_count
-                logger.debug(f"Gemini API call successful. Tokens used: {total_tokens}", True)
+                logger.debug(f"Gemini API call successful. Tokens used: {total_tokens}")
             else:
-                logger.debug(f"Gemini API call successful (no usage metadata available)", True)
+                logger.debug(f"Gemini API call successful (no usage metadata available)")
 
             logger.debug(f"Response: {response}")
             return response
         except Exception as e:
-            logger.error(f"Gemini API Error: {str(e)}", True)
+            logger.error(f"Gemini API Error: {str(e)}")
             raise
 
     def _convert_messages_to_gemini_format(self, messages: List[Dict[str, str]]) -> List[Dict[str, str]]:
@@ -154,7 +154,7 @@ class GeminiClient(BaseLLMClient):
                 media_type = header.split(";")[0].split(":")[1]
                 return {"inline_data": {"mime_type": media_type, "data": data}}
         except Exception as e:
-            logger.error(f"Error processing image URL: {e}", True)
+            logger.error(f"Error processing image URL: {e}")
             return None
         return None
 
@@ -173,7 +173,7 @@ class GeminiClient(BaseLLMClient):
         include_reason: bool = False,
     ) -> Dict[str, Union[str, int]]:
         if not response or not response.candidates:
-            logger.error(f"Invalid response or no candidates in the response", True)
+            logger.error(f"Invalid response or no candidates in the response")
             return {}
 
         finish_reason = response.candidates[0].finish_reason
@@ -185,13 +185,13 @@ class GeminiClient(BaseLLMClient):
         try:
             content_text = response.text
         except Exception as e:
-            logger.warn(f"Cannot extract text from response: {e}", True)
+            logger.warn(f"Cannot extract text from response: {e}")
             if finish_reason == 2:
                 content_text = "[Content blocked by safety filters]"
-                logger.warn("Response blocked by Gemini safety filters", True)
+                logger.warn("Response blocked by Gemini safety filters")
             elif finish_reason == 3:
                 content_text = "[Content blocked by recitation filter]"
-                logger.warn("Response blocked by recitation filter", True)
+                logger.warn("Response blocked by recitation filter")
             else:
                 content_text = f"[No content available - finish_reason: {finish_reason_name}]"
 

@@ -47,9 +47,7 @@ class PressKeyTool(BaseTool):
     ) -> None:
         key = arguments["key"]
         
-        logger.info(f"⌨️ Pressing key: {key}")
-        
+        logger.debug(f"Pressing key: {key}")
         # Browser library: Press Keys selector *keys
         executor.run_keyword("Press Keys", "body", key)
-        logger.info(f"✅ Key pressed")
 

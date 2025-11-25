@@ -60,10 +60,7 @@ class LongPressTool(BaseTool):
         element = ui_candidates[element_index - 1]
         locator = executor.build_locator(element)
         
-        logger.info(f"👆 Long pressing element at index {element_index} (2s)")
-        logger.info(f"Built locator: {locator} from element: {element}")
-        
+        logger.debug(f"Built locator: {locator}, long pressing for 2s")
         # Long press = Tap with duration parameter (count=1, duration=2s)
         executor.run_keyword("Tap", locator, 1, "2s")
-        logger.info(f"✅ Long press completed")
 

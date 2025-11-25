@@ -56,9 +56,6 @@ class DoubleClickTool(BaseTool):
         element = ui_candidates[element_index - 1]
         locator = executor.build_locator(element)
         
-        logger.info(f"🖱️ Double clicking element at index {element_index}")
-        logger.info(f"Built locator: {locator} from element: {element}")
-        
+        logger.debug(f"Built locator: {locator}")
         executor.run_keyword("Click With Options", locator, "left", "clickCount=2")
-        logger.info(f"✅ Double click completed")
 

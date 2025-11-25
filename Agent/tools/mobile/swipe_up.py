@@ -42,8 +42,6 @@ class SwipeUpTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
-        logger.info("👆 Swiping up...")
         # Swipe from bottom (80%) to top (20%) vertically, middle of screen horizontally
         executor.run_keyword("Swipe By Percent", 50, 80, 50, 20, "1s")
-        logger.info("✅ Swipe up completed")
 
