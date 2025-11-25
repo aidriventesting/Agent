@@ -1,6 +1,6 @@
 # Automation tools explained
 
-If you're new to test automation, you might wonder: what are Selenium, Appium, and Playwright? Why do we need them?
+If you're new to test automation or automation in general, you might wonder: what are Selenium, Appium, and Playwright? Why do we need them?
 
 This doc explains the main automation frameworks and why our AI agent builds on top of them.
 

@@ -10,7 +10,7 @@ The agent:
 1. **Understands intent**: "Click the submit button" vs `xpath=//button[3]`
 2. **Observes the UI**: Takes screenshots, reads element trees
 3. **Decides actions**: Which element matches the intent?
-4. **Performs actions**: Via Appium/Selenium
+4. **Performs actions**: Via Appium/Playwright
 5. **Verifies outcomes**: Did it work? Should we retry?
 6. **Recovers from changes**: Finds alternatives when locators break
 

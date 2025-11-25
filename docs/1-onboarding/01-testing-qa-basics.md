@@ -1,5 +1,7 @@
 # Testing & QA basics (quick context)
 
+> **Note**: This document focuses on **test automation** as the primary use case. However, the challenges and principles described here also apply to web scraping and general workflow automation. We use testing as a detailed example because it's the most common and well-documented automation scenario.
+
 ## Why test software?
 
 Software changes constantly. Every new feature, bug fix, or refactor can break existing functionality.
