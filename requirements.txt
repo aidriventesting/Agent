@@ -7,6 +7,7 @@
 robotframework>=6.0
 robotframework-appiumlibrary>=3.0
 Appium-Python-Client>=5.0
+playwright>=1.40.0
 
 # ============================================================================
 # LLM Providers (at least one required)
@@ -27,7 +28,7 @@ python-dotenv>=1.0.0        # Environment variables
 requests>=2.31.0            # HTTP requests (image upload)
 
 # ============================================================================
-# Optional: Vision Features
+# Vision Features (OmniParser)
 # ============================================================================
-# Uncomment if you use OmniParser or advanced visual features:
-# gradio-client>=1.0.0
+# Required for visual click tool (OmniParser integration)
+gradio-client>=2.0.0           # Gradio client for HuggingFace spaces

@@ -42,7 +42,5 @@ class GoBackTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
-        logger.info("◀️ Going back...")
         executor.run_keyword("Go Back")
-        logger.info("✅ Back navigation completed")
 

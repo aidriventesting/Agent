@@ -64,9 +64,6 @@ class SelectOptionTool(BaseTool):
         element = ui_candidates[element_index - 1]
         locator = executor.build_locator(element)
         
-        logger.info(f"📋 Selecting option '{option_value}' in dropdown at index {element_index}")
-        logger.info(f"Built locator: {locator} from element: {element}")
-        
+        logger.debug(f"Built locator: {locator}, selecting option: {option_value}")
         executor.run_keyword("Select Options By", locator, "text", option_value)
-        logger.info(f"✅ Option selected")
 

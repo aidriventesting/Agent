@@ -116,18 +116,17 @@ class DeepSeekClient(BaseLLMClient):
             
             # Log usage
             logger.debug(
-                f"DeepSeek API call successful. Tokens used: {response.usage.input_tokens + response.usage.output_tokens}",
-                True
+                f"DeepSeek API call successful. Tokens used: {response.usage.input_tokens + response.usage.output_tokens}"
             )
             logger.debug(f"Response: {response}")
             
             return response
             
         except APIError as e:
-            logger.error(f"DeepSeek API Error: {str(e)}", True)
+            logger.error(f"DeepSeek API Error: {str(e)}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}", True)
+            logger.error(f"Unexpected error: {str(e)}")
             raise
 
     def _transform_content(self, content):
@@ -244,7 +243,7 @@ class DeepSeekClient(BaseLLMClient):
             Standardized response dictionary
         """
         if not response or not response.content:
-            logger.error(f"Invalid response or no content in the response", True)
+            logger.error(f"Invalid response or no content in the response")
             return {}
         
         # Extract text content and tool calls (follows Anthropic's format)

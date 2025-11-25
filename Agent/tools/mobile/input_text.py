@@ -64,11 +64,7 @@ class InputTextTool(BaseTool):
         element = ui_candidates[element_index - 1]
         locator = executor.build_locator(element)
         
-        logger.info(f"⌨️ Inputting text into element at index {element_index}")
-        logger.info(f"Built locator: {locator} from element: {element}")
-        logger.info(f"Text to input: '{text}'")
-        
+        logger.debug(f"Built locator: {locator}, inputting text: '{text}'")
         executor.run_keyword("Clear Text", locator)
         executor.run_keyword("Input Text", locator, text)
-        logger.info(f"✅ Input text completed")
 

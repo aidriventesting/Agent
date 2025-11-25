@@ -75,7 +75,7 @@ class AgentEngine:
             self.tool_registry.register(ToolClass())
         
         mobile_tools_count = len(self.tool_registry.get_by_category(ToolCategory.MOBILE))
-        logger.info(f"📱 Registered {mobile_tools_count} mobile tools")
+        logger.debug(f"📱 Registered {mobile_tools_count} mobile tools")
     
     def _register_web_tools(self) -> None:
         """Register all web tools in the registry."""
@@ -83,7 +83,7 @@ class AgentEngine:
             self.tool_registry.register(ToolClass())
         
         web_tools_count = len(self.tool_registry.get_by_category(ToolCategory.WEB))
-        logger.info(f"🌐 Registered {web_tools_count} web tools")
+        logger.debug(f"🌐 Registered {web_tools_count} web tools")
     
     def _register_visual_tools(self) -> None:
         """Register all visual verification tools in the registry."""
@@ -91,7 +91,7 @@ class AgentEngine:
             self.tool_registry.register(ToolClass())
         
         visual_tools_count = len(self.tool_registry.get_by_category(ToolCategory.VISUAL))
-        logger.info(f"👁️ Registered {visual_tools_count} visual tools")
+        logger.debug(f"👁️ Registered {visual_tools_count} visual tools")
     
     # ----------------------- Public API -----------------------
     
@@ -153,7 +153,7 @@ class AgentEngine:
             temperature=0
         )
 
-        logger.info(f"AI response: {result}")
+        logger.debug(f"AI response: {result}")
         
         # Execute tool
         self._execute_do_from_tool_calls(result, context, instruction)
@@ -210,7 +210,7 @@ class AgentEngine:
         function_name = tool_call["function"]["name"]
         arguments = tool_call["function"]["arguments"]
         
-        logger.info(f"⚙️ Executing tool: {function_name} with args: {arguments}")
+        logger.debug(f"⚙️ Executing tool: {function_name} with args: {arguments}")
         
         # Get tool from registry
         tool = self.tool_registry.get(function_name)
@@ -219,7 +219,6 @@ class AgentEngine:
         
         # Execute the tool
         tool.execute(self.executor, arguments, context)
-        logger.info(f"✅ Tool execution completed: {function_name}")
 
     def _execute_visual_check_from_tool_calls(self, result: Dict[str, Any]) -> None:
         """Execute visual check from tool calls returned by the LLM using the tool registry."""
@@ -234,7 +233,7 @@ class AgentEngine:
         function_name = tool_call["function"]["name"]
         arguments = tool_call["function"]["arguments"]
         
-        logger.info(f"⚙️ Executing visual tool: {function_name}")
+        logger.debug(f"⚙️ Executing visual tool: {function_name}")
         
         # Get tool from registry
         tool = self.tool_registry.get(function_name)
@@ -246,5 +245,4 @@ class AgentEngine:
         
         # Execute the visual tool (will handle logging and assertions)
         tool.execute(self.executor, arguments, context)
-        logger.info(f"✅ Visual tool execution completed: {function_name}")
 

@@ -43,8 +43,6 @@ class HideKeyboardTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
-        logger.info("⌨️ Hiding keyboard...")
         # Hide Keyboard without arguments for iOS/Android compatibility
         executor.run_keyword("Hide Keyboard")
-        logger.info("✅ Keyboard hidden")
 

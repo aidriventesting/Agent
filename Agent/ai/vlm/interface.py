@@ -110,7 +110,7 @@ class OmniParserOrchestrator:
         )
         
         if not parsed_text:
-            logger.error("❌ OmniParser detected no elements")
+            logger.debug("❌ OmniParser detected no elements")
             return None
         
         # Step 2: Parse and filter elements by type
@@ -122,7 +122,7 @@ class OmniParserOrchestrator:
         elements_data = processor.get_parsed_ui_elements(element_type=element_type)
         
         if not elements_data:
-            logger.error(f"❌ No elements of type '{element_type}' found")
+            logger.debug(f"❌ No elements of type '{element_type}' found")
             return None
          
         logger.debug(f"✓ {len(elements_data)} filtered elements")
@@ -136,13 +136,13 @@ class OmniParserOrchestrator:
         )
         
         if not result:
-            logger.error("❌ The LLM found no matching element")
+            logger.debug("❌ The LLM found no matching element")
             return None
         
         # Add temporary image to result
         result["image_temp_path"] = image_temp_path
         
-        logger.info(
+        logger.debug(
             f"✅ Element found: {result['element_key']} "
             f"(confidence={result.get('confidence', 'unknown')})"
         )

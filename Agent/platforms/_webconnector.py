@@ -10,14 +10,14 @@ class WebConnectorRF:
     """Playwright connector using Robot Framework Browser library keywords."""
 
     def __init__(self) -> None:
-        logger.info("WebConnectorRF initialized - using Browser library keywords")
+        logger.debug("WebConnectorRF initialized - using Browser library keywords")
 
     def get_platform(self) -> str:
         return "web"
 
     def collect_ui_candidates(self, max_items: int = 150) -> List[Dict[str, Any]]:
         """Collect interactive web elements using Browser library keywords."""
-        logger.info("Collecting web UI candidates via Browser keywords...")
+        logger.debug("Collecting web UI candidates via Browser keywords...")
         candidates = []
         
         comprehensive_js = """(function() {
@@ -60,7 +60,7 @@ class WebConnectorRF:
             logger.debug(f"JavaScript returned type: {type(result)}, length: {len(result) if result else 0}")
             
             if result and isinstance(result, list):
-                logger.info(f"Found {len(result)} raw elements from page")
+                logger.debug(f"Found {len(result)} raw elements from page")
                 for elem_data in result:
                     attrs = {
                         'text': elem_data.get('text', ''),
@@ -76,7 +76,6 @@ class WebConnectorRF:
                         'enabled': True,
                     }
                     candidates.append(attrs)
-                    logger.debug(f"Added element: {attrs.get('class_name')} - text: '{attrs.get('text')[:30]}...'")
             else:
                 logger.warn(f"JavaScript did not return expected list: {type(result)}")
                 
@@ -102,7 +101,7 @@ class WebConnectorRF:
             reverse=True
         )
         
-        logger.info(f"Platform: web, Found {len(candidates)} interactive elements after deduplication")
+        logger.debug(f"Platform: web, Found {len(candidates)} interactive elements after deduplication")
         return candidates[:max_items]
 
     def _deduplicate_candidates(self, candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

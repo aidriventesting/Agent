@@ -30,6 +30,7 @@ class ImageUploader:
         # Try each provider in order
         for idx, uploader in enumerate(self.uploaders):
             provider_name = type(uploader).__name__
+            logger.debug(f"Attempting upload with {provider_name} ({idx+1}/{len(self.uploaders)})")
             try:
                 result = uploader.upload_from_base64(base64_data)
                 
@@ -52,6 +53,11 @@ class ImageUploader:
         """
         uploaders = []
         
+        # Debug config loading
+        has_imgbb = bool(self.config.IMGBB_API_KEY)
+        has_freeimage = bool(self.config.FREEIMAGEHOST_API_KEY)
+        logger.debug(f"ImageUploader init: service={service}, has_imgbb={has_imgbb}, has_freeimage={has_freeimage}")
+        
         if service == "imgbb" and self.config.IMGBB_API_KEY:
             uploaders.append(ImgBBUploader())
         elif service == "freeimagehost" and self.config.FREEIMAGEHOST_API_KEY:
@@ -65,6 +71,8 @@ class ImageUploader:
         
         if not uploaders:
             logger.warn("No upload service configured. Images will be returned in base64.")
+        else:
+            logger.debug(f"Configured uploaders: {[type(u).__name__ for u in uploaders]}")
         
         return uploaders
 

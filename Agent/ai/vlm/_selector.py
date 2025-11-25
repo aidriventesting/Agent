@@ -46,7 +46,7 @@ class OmniParserElementSelector:
             
             Returns None if no element is found.
         """
-        logger.info(f"Searching for element: '{element_description}'")
+        logger.debug(f"Searching for element: '{element_description}'")
         logger.debug(f"Number of elements to analyze: {len(elements_data)}")
 
         # Build the prompt
@@ -63,7 +63,7 @@ class OmniParserElementSelector:
             result = self._parse_response(response, elements_data)
             
             if result:
-                logger.info(f"✅ Element found: {result.get('element_key')}")
+                logger.debug(f"✅ Element found: {result.get('element_key')}")
             else:
                 logger.warn("❌ No matching element found")
                 

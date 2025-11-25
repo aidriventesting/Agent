@@ -56,9 +56,6 @@ class HoverTool(BaseTool):
         element = ui_candidates[element_index - 1]
         locator = executor.build_locator(element)
         
-        logger.info(f"🖱️ Hovering over element at index {element_index}")
-        logger.info(f"Built locator: {locator} from element: {element}")
-        
+        logger.debug(f"Built locator: {locator}")
         executor.run_keyword("Hover", locator)
-        logger.info(f"✅ Hover completed")
 

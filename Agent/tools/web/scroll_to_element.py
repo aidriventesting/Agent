@@ -56,9 +56,6 @@ class ScrollToElementTool(BaseTool):
         element = ui_candidates[element_index - 1]
         locator = executor.build_locator(element)
         
-        logger.info(f"📜 Scrolling to element at index {element_index}")
-        logger.info(f"Built locator: {locator} from element: {element}")
-        
+        logger.debug(f"Built locator: {locator}")
         executor.run_keyword("Scroll To Element", locator)
-        logger.info(f"✅ Scrolled to element")
 

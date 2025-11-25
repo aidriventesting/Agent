@@ -54,11 +54,11 @@ class OpenAIClient(BaseLLMClient):
                 params["tool_choice"] = tool_choice
 
             response = self.client.chat.completions.create(**params)
-            logger.debug(f"OpenAI API call successful. Tokens used: {response.usage.total_tokens}", True)
+            logger.debug(f"OpenAI API call successful. Tokens used: {response.usage.total_tokens}")
             logger.debug(f"messages: {response}")
             return response
         except Exception as e:
-            logger.error(f"OpenAI API Error: {str(e)}", True)
+            logger.error(f"OpenAI API Error: {str(e)}")
             raise
 
     def _validate_parameters(self, temperature: float, top_p: float):
@@ -76,7 +76,7 @@ class OpenAIClient(BaseLLMClient):
         include_reason: bool = False,
     ) -> Dict[str, Union[str, int]]:
         if not response or not response.choices:
-            logger.error(f"Invalid response or no choices in the response", True)
+            logger.error(f"Invalid response or no choices in the response")
             return {}
 
         result = {
