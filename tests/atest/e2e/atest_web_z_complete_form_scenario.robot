@@ -31,12 +31,12 @@ Test Real World Wikipedia Navigation Scenario
     Agent.check    instruction=verify that we are on the Robot Framework Wikipedia page
     Sleep    ${delay}s
     
-    # === Step 4: Read the introduction by hovering ===
-    Agent.do    instruction=hover over the text particpate in the 2025 international science photo competition
+    # === Step 4: Toggle dark mode ===
+    Agent.do    instruction=click on the dark mode radio button
     Sleep    ${delay}s
-    Agent.check    instruction=verify that the text "participate in the 2025 international science photo competition" is underlined
+    Agent.check    instruction=verify that the page is now displayed in dark mode
     Sleep    ${delay}s
-    
+
     # === Step 5: Scroll down to read more content ===
     Agent.do    instruction=scroll down to read more about Robot Framework
     Sleep    ${delay}s
@@ -62,15 +62,15 @@ Test Real World Wikipedia Navigation Scenario
     Sleep    ${delay}s
     
     # === Step 9: Click on a related link (Python programming language) ===
-    Agent.do    instruction=click on the Python link in the article
+    Agent.do    instruction=click on the test automation link in the article
     Sleep    ${delay}s
-    Agent.check    instruction=verify that we are now on the Python programming language page
+    Agent.check    instruction=verify that we are now on the test automation page
     Sleep    ${delay}s
     
     # === Step 10: Explore Python page by scrolling ===
-    Agent.do    instruction=scroll down to read about Python
+    Agent.do    instruction=scroll down to read about test automation
     Sleep    ${delay}s
-    Agent.check    instruction=verify that we can see content about Python
+    Agent.check    instruction=verify that we can see content about test automation
     Sleep    ${delay}s
     
     # === Step 11: Navigate back to Robot Framework ===
