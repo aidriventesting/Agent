@@ -36,9 +36,7 @@ class ImageUploader:
             # If the upload fails (returns None), use the fallback
             if result is None:
                 logger.warn(
-                    "Fallback: returning the image in base64 (upload failed)",
-                    robot_log=False
-                )
+                    "Fallback: returning the image in base64 (upload failed)"                )
                 return f"data:image/png;base64,{base64_data}"
             
             return result
@@ -46,9 +44,7 @@ class ImageUploader:
         except Exception as e:
             # In case of an unexpected error, log and return the base64
             logger.warn(
-                f"Fallback: returning the image in base64 (error: {str(e)})",
-                robot_log=False
-            )
+                f"Fallback: returning the image in base64 (error: {str(e)})"            )
             return f"data:image/png;base64,{base64_data}"
 
     # def upload_from_file(self, file_path: str) -> Optional[str]:

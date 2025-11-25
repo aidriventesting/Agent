@@ -9,10 +9,10 @@ Test Contact Us Form Submit
     [Documentation]    Happy path: Fill and submit Contact Us form
     [Tags]    mobile    forms
     Open Application With Config
-    Sleep    2s
+    Sleep    1s
     
     Agent.do    instruction=click on the CONTACT US FORM button
-    Sleep    2s
+    Sleep    1s
     
     Agent.do    instruction=input Abdelkader in the name field
     Sleep    1s
@@ -27,7 +27,7 @@ Test Contact Us Form Submit
     Sleep    1s
     
     Agent.do    instruction=click on the SUBMIT button
-    Sleep    2s
+    Sleep    1s
     
     Agent.check    instruction=verify that the form was submitted successfully and show the following information : Abdelkader, abdelkader@gmail.com, 123 Rue de la Paix, Paris, 1234567890
     Sleep    1s

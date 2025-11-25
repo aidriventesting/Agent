@@ -1,0 +1,64 @@
+from typing import Any, Dict
+from Agent.tools.base import BaseTool, ExecutorProtocol, ToolCategory
+from robot.api import logger
+
+
+class ClearTextTool(BaseTool):
+    """Clear text from an input field."""
+    
+    @property
+    def name(self) -> str:
+        return "clear_text"
+    
+    @property
+    def description(self) -> str:
+        return "Clear text from an input field by index. Use this to empty a text field before typing new text"
+    
+    @property
+    def category(self) -> ToolCategory:
+        return ToolCategory.WEB
+    
+    @property
+    def works_on_locator(self) -> bool:
+        return True
+    
+    @property
+    def works_on_visual(self) -> bool:
+        return False
+    
+    def get_parameters_schema(self) -> Dict[str, Any]:
+        return {
+            "type": "object",
+            "properties": {
+                "element_index": {
+                    "type": "integer",
+                    "description": "The index number of the text field to clear from the UI elements list (1-based)",
+                    "minimum": 1
+                }
+            },
+            "required": ["element_index"]
+        }
+    
+    def execute(
+        self, 
+        executor: ExecutorProtocol, 
+        arguments: Dict[str, Any], 
+        context: Dict[str, Any]
+    ) -> None:
+        element_index = arguments["element_index"]
+        ui_candidates = context.get("ui_candidates", [])
+        
+        if element_index < 1 or element_index > len(ui_candidates):
+            raise AssertionError(
+                f"Invalid element_index: {element_index}. Must be 1-{len(ui_candidates)}"
+            )
+        
+        element = ui_candidates[element_index - 1]
+        locator = executor.build_locator(element)
+        
+        logger.info(f"🧹 Clearing text from element at index {element_index}")
+        logger.info(f"Built locator: {locator} from element: {element}")
+        
+        executor.run_keyword("Clear Text", locator)
+        logger.info(f"✅ Text cleared")
+

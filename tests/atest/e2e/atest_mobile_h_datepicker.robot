@@ -23,10 +23,10 @@ Test Date Picker Display
     [Documentation]    Happy path: Verify current date is displayed
     [Tags]    mobile    pickers    date
     Open Application With Config
-    Sleep    2s
+    Sleep    1s
     
     Agent.do    instruction=click on the DATE button
-    Sleep    2s
+    Sleep    1s
     
     Agent.check    instruction=verify that the Date Activity screen is displayed with a calendar
     Sleep    1s
@@ -41,10 +41,10 @@ Test Date Picker Display Negative
     [Documentation]    Negative test: Verify wrong date is NOT displayed
     [Tags]    mobile    pickers    date    negative
     Open Application With Config
-    Sleep    2s
+    Sleep    1s
     
     Agent.do    instruction=click on the DATE button
-    Sleep    2s
+    Sleep    1s
     
     Agent.check    instruction=verify that the Date Activity screen is displayed with a calendar
     Sleep    1s

@@ -150,6 +150,37 @@ class OmniParserOrchestrator:
         return result
 
     @staticmethod
+    def get_element_center_coordinates(
+        element_result: Dict[str, Any]
+    ) -> Tuple[int, int]:
+        """
+        Calculate center coordinates from element result.
+        
+        Args:
+            element_result: Result dict from find_element() containing
+                          'element_data' with 'bbox' and 'image_temp_path'
+        
+        Returns:
+            Tuple (x_center, y_center) in pixels
+        """
+        bbox_normalized = element_result["element_data"]["bbox"]
+        image_temp_path = element_result["image_temp_path"]
+        
+        # Convert bbox to pixels
+        x1, y1, x2, y2 = OmniParserOrchestrator.bbox_to_pixels_from_image(
+            bbox_normalized=bbox_normalized,
+            image_path=image_temp_path
+        )
+        
+        # Calculate center
+        x_center = (x1 + x2) // 2
+        y_center = (y1 + y2) // 2
+        
+        logger.debug(f"Element center coordinates: ({x_center}, {y_center})")
+        
+        return x_center, y_center
+
+    @staticmethod
     def bbox_to_pixels(
         bbox_normalized: List[float],
         image_width: int,
