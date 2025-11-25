@@ -64,6 +64,10 @@ class AgentPromptComposer:
             system_content = (
                 "You are a WEB test automation engine.\n"
                 "Your job: analyze the instruction and call the appropriate function to interact with the web page.\n\n"
+                "CRITICAL: Pay attention to element tags:\n"
+                "- <input> or <textarea> = text input fields (use input_text tool)\n"
+                "- <button> or <a> = clickable elements (use click_element tool)\n"
+                "- <select> = dropdown (use select_option tool)\n\n"
                 "Select the element index from the numbered list by calling the appropriate function."
             )
         
