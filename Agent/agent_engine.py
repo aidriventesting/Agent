@@ -1,13 +1,15 @@
-from typing import Any, Dict, List, Optional
+from typing import Any, Dict, List, Optional, Union
 
-from Agent.platforms import DeviceConnector
+from Agent.platforms import DeviceConnector, WebConnectorRF, create_platform
 from Agent.ai.llm.facade import UnifiedLLMFacade
 from Agent.ai._promptcomposer import AgentPromptComposer
 from Agent.utilities.imguploader.imghandler import ImageUploader
 from Agent.tools.registry import ToolRegistry
 from Agent.tools.base import ToolCategory
 from Agent.executors.mobile_executor import MobileExecutor
+from Agent.executors.web_executor import WebExecutor
 from Agent.tools.mobile import MOBILE_TOOLS
+from Agent.tools.web import WEB_TOOLS
 from Agent.tools.visual import VISUAL_TOOLS
 from robot.api import logger
 
@@ -28,11 +30,19 @@ class AgentEngine:
         self, 
         llm_client: str = "openai", 
         llm_model: str = "gpt-4o-mini",
-        platform: Optional[DeviceConnector] = None,
+        platform: Optional[Union[DeviceConnector, WebConnectorRF]] = None,
+        platform_type: str = "auto",
         click_mode: str = "hybrid"
     ) -> None:
-        # Platform connector
-        self.platform: DeviceConnector = platform or DeviceConnector()
+        # Platform connector - create or use provided
+        if platform is None:
+            self.platform = create_platform(platform_type)
+        else:
+            self.platform = platform
+        
+        # Detect platform type
+        platform_name = self.platform.get_platform()
+        logger.info(f"🌐 Platform detected: {platform_name}")
         
         # AI components
         self.llm = UnifiedLLMFacade(provider=llm_client, model=llm_model)
@@ -41,12 +51,18 @@ class AgentEngine:
         )
         self.image_uploader = ImageUploader(service="auto")
         
-        # Tool execution components
+        # Tool execution components - create appropriate executor
         self.tool_registry = ToolRegistry()
-        self.executor = MobileExecutor(self.platform)
+        if platform_name == "web":
+            self.executor = WebExecutor(self.platform)
+        else:
+            self.executor = MobileExecutor(self.platform)
         
-        # Register tools
-        self._register_mobile_tools()
+        # Register tools based on platform
+        if platform_name == "web":
+            self._register_web_tools()
+        else:
+            self._register_mobile_tools()
         self._register_visual_tools()
         
         # Click strategy
@@ -60,6 +76,14 @@ class AgentEngine:
         
         mobile_tools_count = len(self.tool_registry.get_by_category(ToolCategory.MOBILE))
         logger.info(f"📱 Registered {mobile_tools_count} mobile tools")
+    
+    def _register_web_tools(self) -> None:
+        """Register all web tools in the registry."""
+        for ToolClass in WEB_TOOLS:
+            self.tool_registry.register(ToolClass())
+        
+        web_tools_count = len(self.tool_registry.get_by_category(ToolCategory.WEB))
+        logger.info(f"🌐 Registered {web_tools_count} web tools")
     
     def _register_visual_tools(self) -> None:
         """Register all visual verification tools in the registry."""
@@ -112,12 +136,14 @@ class AgentEngine:
             context["screenshot_base64"] = screenshot_base64
         
         # Prepare AI request
+        platform_name = self.platform.get_platform()
         messages = self.prompt_composer.compose_do_messages(
             instruction=instruction,
             ui_elements=ui_candidates,
+            platform=platform_name,
             click_mode=self.click_mode
         )
-        tools = self.prompt_composer.get_do_tools(click_mode=self.click_mode)
+        tools = self.prompt_composer.get_do_tools(category=platform_name, click_mode=self.click_mode)
         
         # Call AI
         result = self.llm.send_ai_request_with_tools(

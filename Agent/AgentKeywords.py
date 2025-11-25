@@ -23,11 +23,13 @@ class AgentKeywords:
         self, 
         llm_client: str = "openai", 
         llm_model: str = "gpt-4o-mini",
+        platform_type: str = "auto",
         click_mode: str = "hybrid"
     ):
         self.engine = AgentEngine(
             llm_client=llm_client, 
             llm_model=llm_model,
+            platform_type=platform_type,
             click_mode=click_mode
         )
 
