@@ -28,6 +28,8 @@ class OmniParserElementSelector:
         elements_data: Dict[str, Dict[str, Any]],
         element_description: str,
         temperature: float = 0.0,
+        use_vision: bool = False,
+        image_path: Optional[str] = None,
     ) -> Optional[Dict[str, Any]]:
         """
         Selects the GUI element that matches the description.
@@ -36,6 +38,8 @@ class OmniParserElementSelector:
             elements_data: Dictionary of elements (e.g., {'icon3': {'type': 'icon', ...}})
             element_description: Description of the element to find (e.g., "YouTube app")
             temperature: Temperature for generation (0.0 = deterministic)
+            use_vision: If True, send annotated image to LLM (requires vision-capable model)
+            image_path: Path to annotated image (required if use_vision=True)
             
         Returns:
             A dictionary with:
@@ -50,7 +54,7 @@ class OmniParserElementSelector:
         logger.debug(f"Number of elements to analyze: {len(elements_data)}")
 
         # Build the prompt
-        messages = self._build_prompt(elements_data, element_description)
+        messages = self._build_prompt(elements_data, element_description, use_vision=use_vision, image_path=image_path)
         
         # Send to AI
         try:
@@ -77,6 +81,8 @@ class OmniParserElementSelector:
         self,
         elements_data: Dict[str, Dict[str, Any]],
         element_description: str,
+        use_vision: bool = False,
+        image_path: Optional[str] = None,
     ) -> list:
         """
         Builds the prompt for the AI.
@@ -104,16 +110,44 @@ Respond ONLY in JSON with this structure:
     "reason": "brief explanation of your choice"
 }"""
 
-        user_prompt = f"""Available elements:
+        user_text = f"""Available elements:
 {elements_text}
 
 Description of the element being searched for: "{element_description}"
 
 Find the element that best matches this description."""
 
+        # Build user message (text-only or multimodal)
+        if use_vision and image_path:
+            import base64
+            import os
+            
+            # Read and encode the annotated image from OmniParser
+            with open(image_path, "rb") as f:
+                image_base64 = base64.b64encode(f.read()).decode('utf-8')
+            
+            # Determine image format from extension
+            ext = os.path.splitext(image_path)[1].lower()
+            media_type = "image/png" if ext == ".png" else "image/jpeg" if ext in [".jpg", ".jpeg"] else "image/webp"
+            
+            # Send both text list AND annotated image to LLM
+            user_content = [
+                {
+                    "type": "text", 
+                    "text": f"{user_text}\n\nNOTE: The image shows the annotated screenshot with numbered bounding boxes corresponding to the element keys above."
+                },
+                {
+                    "type": "image_url", 
+                    "image_url": {"url": f"data:{media_type};base64,{image_base64}"}
+                }
+            ]
+            logger.debug("Using vision mode: sending OmniParser annotated image to LLM")
+        else:
+            user_content = user_text
+
         return [
             {"role": "system", "content": system_prompt},
-            {"role": "user", "content": user_prompt},
+            {"role": "user", "content": user_content},
         ]
 
     def _format_elements(self, elements_data: Dict[str, Dict[str, Any]]) -> str:

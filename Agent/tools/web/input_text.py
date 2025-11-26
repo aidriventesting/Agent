@@ -26,6 +26,10 @@ class InputTextTool(BaseTool):
     def works_on_visual(self) -> bool:
         return False
     
+    @property
+    def has_visual_equivalent(self) -> bool:
+        return True
+    
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
             "type": "object",

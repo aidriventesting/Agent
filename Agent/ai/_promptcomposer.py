@@ -63,12 +63,39 @@ class AgentPromptComposer:
         else:
             system_content = (
                 "You are a WEB test automation engine.\n"
-                "Your job: analyze the instruction and call the appropriate function to interact with the web page.\n\n"
-                "CRITICAL: Pay attention to element tags:\n"
+                "Your job: analyze the instruction and call the appropriate function to interact with the web page.\n"
+            )
+            
+            # Add click guidance based on mode
+            if click_mode == "xml":
+                system_content += (
+                    "\nFOR INTERACTION: Use standard tools (click_element, input_text) with element index from the list.\n"
+                )
+            elif click_mode == "visual":
+                system_content += (
+                    "\nFOR INTERACTION: Use VISUAL tools:\n"
+                    "- click_visual_element(description): Click element by visual description\n"
+                    "- input_text_visual(description, text): Input text into element by visual description\n"
+                    "- hover_visual(description): Hover over element by visual description\n"
+                    "- double_click_visual(description): Double click element by visual description\n"
+                    "You will receive a screenshot. Analyze it and use visual descriptions.\n"
+                )
+            else:  # hybrid
+                system_content += (
+                    "\nACTION SELECTION RULES:\n"
+                    "1. FOR TEXT INPUT:\n"
+                    "   a. input_text(index, text): USE DEFAULT when element is in the list (<input>, <textarea>)\n"
+                    "   b. input_text_visual(description, text): USE ONLY when element is NOT in the list or has no clear locator\n"
+                    "2. FOR CLICKING/HOVERING:\n"
+                    "   a. Standard tools (click_element, hover, double_click): USE DEFAULT when element is in the list\n"
+                    "   b. Visual tools (click_visual_element, hover_visual, double_click_visual): USE ONLY for icons, images, or elements NOT in the list\n"
+                )
+
+            system_content += (
+                "\nCRITICAL: Pay attention to element tags when using standard tools:\n"
                 "- <input> or <textarea> = text input fields (use input_text tool)\n"
                 "- <button> or <a> = clickable elements (use click_element tool)\n"
-                "- <select> = dropdown (use select_option tool)\n\n"
-                "Select the element index from the numbered list by calling the appropriate function."
+                "- <select> = dropdown (use select_option tool)\n"
             )
         
         # Build user content based on mode

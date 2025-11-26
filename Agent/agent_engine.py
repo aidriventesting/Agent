@@ -115,8 +115,12 @@ class AgentEngine:
         """
         logger.info(f"🚀 Starting Agent.Do: '{instruction}'")
 
-        # Collect UI context
-        ui_candidates = self.platform.collect_ui_candidates()
+        # Collect UI context (skip in visual mode - we only need screenshot)
+        ui_candidates = []
+        if self.click_mode != "visual":
+            ui_candidates = self.platform.collect_ui_candidates()
+        else:
+            logger.debug("⚡ UI collection skipped (mode: visual)")
         
         # Capture screenshot if needed (based on click_mode)
         screenshot_base64 = None
