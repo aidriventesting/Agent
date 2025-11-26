@@ -49,12 +49,12 @@
       },
       "max_context_tokens": 131072
     },
-    "gpt-4o-mini": {
+    "gpt-4o-mini-2024-07-18": {
       "provider": "openai",
       "display_name": "GPT-4o Mini",
       "pricing": {
-        "input": 0.00015,
-        "output": 0.0006
+        "input": 0.15,
+        "output": 0.60
       },
       "max_context_tokens": 131072
     },
