@@ -110,7 +110,7 @@ class OmniParserOrchestrator:
         )
         
         if not parsed_text:
-            logger.error("❌ OmniParser detected no elements")
+            logger.debug("❌ OmniParser detected no elements")
             return None
         
         # Step 2: Parse and filter elements by type
@@ -122,7 +122,7 @@ class OmniParserOrchestrator:
         elements_data = processor.get_parsed_ui_elements(element_type=element_type)
         
         if not elements_data:
-            logger.error(f"❌ No elements of type '{element_type}' found")
+            logger.debug(f"❌ No elements of type '{element_type}' found")
             return None
          
         logger.debug(f"✓ {len(elements_data)} filtered elements")
@@ -136,18 +136,49 @@ class OmniParserOrchestrator:
         )
         
         if not result:
-            logger.error("❌ The LLM found no matching element")
+            logger.debug("❌ The LLM found no matching element")
             return None
         
         # Add temporary image to result
         result["image_temp_path"] = image_temp_path
         
-        logger.info(
+        logger.debug(
             f"✅ Element found: {result['element_key']} "
             f"(confidence={result.get('confidence', 'unknown')})"
         )
         
         return result
+
+    @staticmethod
+    def get_element_center_coordinates(
+        element_result: Dict[str, Any]
+    ) -> Tuple[int, int]:
+        """
+        Calculate center coordinates from element result.
+        
+        Args:
+            element_result: Result dict from find_element() containing
+                          'element_data' with 'bbox' and 'image_temp_path'
+        
+        Returns:
+            Tuple (x_center, y_center) in pixels
+        """
+        bbox_normalized = element_result["element_data"]["bbox"]
+        image_temp_path = element_result["image_temp_path"]
+        
+        # Convert bbox to pixels
+        x1, y1, x2, y2 = OmniParserOrchestrator.bbox_to_pixels_from_image(
+            bbox_normalized=bbox_normalized,
+            image_path=image_temp_path
+        )
+        
+        # Calculate center
+        x_center = (x1 + x2) // 2
+        y_center = (y1 + y2) // 2
+        
+        logger.debug(f"Element center coordinates: ({x_center}, {y_center})")
+        
+        return x_center, y_center
 
     @staticmethod
     def bbox_to_pixels(

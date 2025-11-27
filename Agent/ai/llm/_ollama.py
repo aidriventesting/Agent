@@ -107,7 +107,7 @@ class OllamaClient(BaseLLMClient):
                     True
                 )
             else:
-                logger.error(f"Ollama API Error: {error_msg}", True)
+                logger.error(f"Ollama API Error: {error_msg}")
             raise
 
     def _validate_parameters(self, temperature: float, top_p: float):
@@ -172,7 +172,7 @@ class OllamaClient(BaseLLMClient):
             Standardized response dictionary
         """
         if not response or not response.choices:
-            logger.error(f"Invalid response or no choices in the response", True)
+            logger.error(f"Invalid response or no choices in the response")
             return {}
             
         result = {

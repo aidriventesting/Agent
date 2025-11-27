@@ -60,7 +60,7 @@ pabot_results/
 results/
 log/
 logs/
-docs/
+
 env2/
 # IDEs
 .vscode/

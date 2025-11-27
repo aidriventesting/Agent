@@ -1,4 +1,3 @@
-import os
 import requests
 from typing import Optional
 from robot.api import logger
@@ -25,6 +24,10 @@ class ImgBBUploader(BaseImageUploader):
                 response = requests.post(self.base_url, files=payload)
             else:
                 response = requests.post(self.base_url, data=payload, headers=self.headers)
+            
+            if not response.ok:
+                logger.error(f"ImgBB API Error: {response.status_code} - {response.text}")
+                
             response.raise_for_status()
             json_data = response.json()
             return self._extract_url(json_data)
@@ -43,6 +46,10 @@ class ImgBBUploader(BaseImageUploader):
         return data.get("display_url")
 
     def upload_from_base64(self, base64_data: str, filename: str = "screenshot.png", expiration: Optional[int] = None) -> Optional[str]:
+        # , was causing error
+        if "," in base64_data:
+            base64_data = base64_data.split(",", 1)[1]
+            
         payload = {"key": self.api_key, "image": base64_data, "name": filename}
         if expiration is not None:
             payload["expiration"] = str(expiration)
@@ -59,5 +66,6 @@ class ImgBBUploader(BaseImageUploader):
     #         full_path = os.path.abspath(file_path)
     #         self.logger.error(f"File not found: {full_path}")
     #         raise FileNotFoundError(f"File not found: {full_path}")
+
 
 

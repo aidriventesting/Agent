@@ -84,18 +84,17 @@ class AnthropicClient(BaseLLMClient):
             response = self.client.messages.create(**api_params)
 
             logger.debug(
-                f"Anthropic API call successful. Tokens used: {response.usage.input_tokens + response.usage.output_tokens}",
-                True,
+                f"Anthropic API call successful. Tokens used: {response.usage.input_tokens + response.usage.output_tokens}"
             )
             logger.debug(f"Response: {response}")
 
             return response
 
         except APIError as e:
-            logger.error(f"Anthropic API Error: {str(e)}", True)
+            logger.error(f"Anthropic API Error: {str(e)}")
             raise
         except Exception as e:
-            logger.error(f"Unexpected error: {str(e)}", True)
+            logger.error(f"Unexpected error: {str(e)}")
             raise
 
     def _transform_content(self, content):
@@ -186,7 +185,7 @@ class AnthropicClient(BaseLLMClient):
         include_reason: bool = False,
     ) -> Dict[str, Union[str, int, float]]:
         if not response or not response.content:
-            logger.error(f"Invalid response or no content in the response", True)
+            logger.error(f"Invalid response or no content in the response")
             return {}
 
         content_text = ""
