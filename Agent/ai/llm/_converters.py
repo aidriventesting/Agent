@@ -20,10 +20,50 @@ def convert_to_anthropic_tools(openai_tools: List[Dict[str, Any]]) -> List[Dict[
         anthropic_tools.append(anthropic_tool)
     return anthropic_tools
 
+def _clean_gemini_schema(schema: Dict[str, Any]) -> Dict[str, Any]:
+    """
+    Remove JSON Schema fields that Gemini API doesn't support.
+    Gemini doesn't support: minimum, maximum, pattern, exclusiveMinimum, 
+    exclusiveMaximum, multipleOf, etc.
+    
+    Args:
+        schema: JSON Schema dictionary
+        
+    Returns:
+        Cleaned schema dictionary with only supported fields
+    """
+    if not isinstance(schema, dict):
+        return schema
+    
+    # Fields that Gemini supports
+    supported_fields = {
+        "type", "description", "properties", "required", "items", 
+        "enum", "default", "format", "title"
+    }
+    
+    cleaned = {}
+    
+    for key, value in schema.items():
+        if key in supported_fields:
+            if key == "properties" and isinstance(value, dict):
+                # Recursively clean nested properties
+                cleaned[key] = {
+                    prop_name: _clean_gemini_schema(prop_schema)
+                    for prop_name, prop_schema in value.items()
+                }
+            elif key == "items" and isinstance(value, dict):
+                # Recursively clean array items schema
+                cleaned[key] = _clean_gemini_schema(value)
+            else:
+                cleaned[key] = value
+    
+    return cleaned
+
 def convert_to_gemini_tools(openai_tools: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
     """
     Convert OpenAI-style tool definitions to Gemini format.
     Gemini expects a list of tool objects, where each tool object contains 'function_declarations'.
+    Also removes unsupported JSON Schema fields (minimum, maximum, pattern, etc.)
     """
     function_declarations = []
     
@@ -33,10 +73,14 @@ def convert_to_gemini_tools(openai_tools: List[Dict[str, Any]]) -> List[Dict[str
             
         fn = tool.get("function", {})
         
+        # Clean the parameters schema to remove unsupported fields
+        parameters = fn.get("parameters", {})
+        cleaned_parameters = _clean_gemini_schema(parameters)
+        
         func_decl = {
             "name": fn.get("name"),
             "description": fn.get("description"),
-            "parameters": fn.get("parameters")
+            "parameters": cleaned_parameters
         }
         function_declarations.append(func_decl)
 

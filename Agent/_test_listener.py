@@ -2,6 +2,9 @@
 Robot Framework Test Listener
 Automatically logs API costs after each test execution.
 """
+import json
+import os
+from datetime import datetime
 from robot.api import logger
 from Agent.utilities._costtracker import CostTracker
 
@@ -56,19 +59,36 @@ class CostLoggingListener:
     
     def end_suite(self, data, result):
         """
-        Called when a test suite ends. Logs the session total.
+        Called when a test suite ends. Writes cost data to JSON file.
         
         Args:
             data: Suite data
             result: Suite result object
         """
         session_total = self.cost_tracker.get_session_total()
-        
         if session_total > 0:
-            logger.info(
-                f"\n{'='*60}\n"
-                f"SESSION TOTAL API COST: ${session_total:.6f}\n"
-                f"{'='*60}",
-                html=True
-            )
-
+            cost_summary = {
+                'suite_name': result.name,
+                'timestamp': datetime.now().isoformat(),
+                'session_total': round(session_total, 6),
+                'tests': {}
+            }
+            
+            all_test_costs = self.cost_tracker.get_all_test_costs()
+            for test_name, cost_data in all_test_costs.items():
+                cost_summary['tests'][test_name] = {
+                    'total': round(cost_data['total'], 6),
+                    'input_cost': round(cost_data['input_cost'], 6),
+                    'output_cost': round(cost_data['output_cost'], 6),
+                    'calls': cost_data['calls'],
+                    'models': sorted(list(cost_data.get('models', set())))
+                }
+            
+            log_dir = 'log'
+            os.makedirs(log_dir, exist_ok=True)
+            timestamp = datetime.now().strftime('%Y%m%d_%H%M%S')
+            json_file = os.path.join(log_dir, f'api_costs_{timestamp}.json')
+            
+            with open(json_file, 'w') as f:
+                json.dump(cost_summary, f, indent=2)
+            

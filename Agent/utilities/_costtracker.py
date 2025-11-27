@@ -45,7 +45,8 @@ class CostTracker:
                     'total': 0.0,
                     'input_cost': 0.0,
                     'output_cost': 0.0,
-                    'calls': 0
+                    'calls': 0,
+                    'models': set()
                 }
             logger.debug(f"Started cost tracking for test: {test_name}")
     
@@ -69,6 +70,7 @@ class CostTracker:
             test_data['output_cost'] += output_cost
             test_data['total'] += total_cost
             test_data['calls'] += 1
+            test_data['models'].add(model)
             self._session_total += total_cost
             
             logger.debug(
@@ -89,12 +91,13 @@ class CostTracker:
         with self._lock:
             test_name = test_name or self._current_test
             if test_name is None:
-                return {'total': 0.0, 'input_cost': 0.0, 'output_cost': 0.0, 'calls': 0}
+                return {'total': 0.0, 'input_cost': 0.0, 'output_cost': 0.0, 'calls': 0, 'models': set()}
             return self._test_costs.get(test_name, {
                 'total': 0.0,
                 'input_cost': 0.0,
                 'output_cost': 0.0,
-                'calls': 0
+                'calls': 0,
+                'models': set()
             })
     
     def get_session_total(self) -> float:
@@ -120,13 +123,14 @@ class CostTracker:
         with self._lock:
             test_name = test_name or self._current_test
             if test_name is None:
-                return {'total': 0.0, 'input_cost': 0.0, 'output_cost': 0.0, 'calls': 0}
+                return {'total': 0.0, 'input_cost': 0.0, 'output_cost': 0.0, 'calls': 0, 'models': set()}
             
             cost_data = self._test_costs.get(test_name, {
                 'total': 0.0,
                 'input_cost': 0.0,
                 'output_cost': 0.0,
-                'calls': 0
+                'calls': 0,
+                'models': set()
             })
             
             if self._current_test == test_name:
@@ -141,6 +145,16 @@ class CostTracker:
             self._current_test = None
             self._session_total = 0.0
             logger.debug("Cost tracker reset")
+    
+    def get_all_test_costs(self) -> Dict[str, Dict[str, float]]:
+        """
+        Get cost information for all tests.
+        
+        Returns:
+            Dictionary with all test costs
+        """
+        with self._lock:
+            return dict(self._test_costs)
     
     def reset_test(self, test_name: Optional[str] = None):
         """
@@ -158,7 +172,8 @@ class CostTracker:
                     'total': 0.0,
                     'input_cost': 0.0,
                     'output_cost': 0.0,
-                    'calls': 0
+                    'calls': 0,
+                    'models': set()
                 }
                 logger.debug(f"Reset cost tracking for test: {test_name}")
 

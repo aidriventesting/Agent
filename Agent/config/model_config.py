@@ -6,16 +6,20 @@ import json
 import os
 from typing import Dict, Optional, Any
 from pathlib import Path
+from robot.api import logger
 
 
 class ModelConfig:
     """
     Singleton class to load and access LLM model configurations.
+    Integrates with PriceFetcher to get current pricing from Helicone API.
     """
     
     _instance = None
     _config_data = None
     _config_file = None
+    _price_fetcher = None
+    _live_pricing = None
     
     def __new__(cls):
         if cls._instance is None:
@@ -25,6 +29,7 @@ class ModelConfig:
     def __init__(self):
         if ModelConfig._config_data is None:
             self._load_config()
+            self._initialize_price_fetcher()
     
     def _load_config(self):
         """Load configuration from JSON file."""
@@ -42,6 +47,21 @@ class ModelConfig:
             )
         except json.JSONDecodeError as e:
             raise ValueError(f"Invalid JSON in model configuration file: {e}")
+    
+    def _initialize_price_fetcher(self):
+        """Initialize the price fetcher and fetch current prices."""
+        try:
+            from Agent.utilities._pricefetcher import PriceFetcher
+            ModelConfig._price_fetcher = PriceFetcher()
+            
+            live_prices, source = ModelConfig._price_fetcher.get_current_prices()
+            ModelConfig._live_pricing = live_prices
+            
+            logger.info(f"Initialized pricing from {source} with {len(live_prices)} models")
+            
+        except Exception as e:
+            logger.warn(f"Failed to initialize price fetcher: {str(e)}. Using config file prices only.")
+            ModelConfig._live_pricing = {}
     
     def get_provider_default_model(self, provider: str) -> Optional[str]:
         """
@@ -73,6 +93,7 @@ class ModelConfig:
     def get_model_pricing(self, model_name: str) -> Optional[Dict[str, float]]:
         """
         Get pricing information for a model.
+        Prioritizes live pricing from Helicone API, falls back to config file.
         
         Args:
             model_name: Model name
@@ -80,6 +101,11 @@ class ModelConfig:
         Returns:
             Dictionary with 'input' and 'output' pricing per 1M tokens, or None
         """
+        # First, try to get live pricing if available
+        if ModelConfig._live_pricing and model_name in ModelConfig._live_pricing:
+            return ModelConfig._live_pricing[model_name]
+        
+        # Fallback to config file pricing
         model_info = self.get_model_info(model_name)
         return model_info.get('pricing') if model_info else None
     

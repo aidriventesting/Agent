@@ -126,7 +126,13 @@ class AgentStepRunner:
         
         if function_name == "tap_element":
             element_index = arguments.get("element_index")
-            if element_index is None or element_index < 1 or element_index > len(ui_candidates):
+            if element_index is None:
+                raise AssertionError("element_index is required")
+            
+            # Convert to int (handles float values from Gemini)
+            element_index = int(element_index)
+            
+            if element_index < 1 or element_index > len(ui_candidates):
                 raise AssertionError(f"Invalid element_index: {element_index}. Must be 1-{len(ui_candidates)}")
             
             element = ui_candidates[element_index - 1]
@@ -138,7 +144,13 @@ class AgentStepRunner:
             element_index = arguments.get("element_index")
             text = arguments.get("text")
             
-            if element_index is None or element_index < 1 or element_index > len(ui_candidates):
+            if element_index is None:
+                raise AssertionError("element_index is required")
+            
+            # Convert to int (handles float values from Gemini)
+            element_index = int(element_index)
+            
+            if element_index < 1 or element_index > len(ui_candidates):
                 raise AssertionError(f"Invalid element_index: {element_index}. Must be 1-{len(ui_candidates)}")
             
             if not text:
