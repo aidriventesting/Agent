@@ -58,6 +58,7 @@ class OmniParserOrchestrator:
         use_paddleocr: Optional[bool] = None,
         imgsz: Optional[int] = None,
         temperature: float = 0.0,
+        use_vision_for_selection: bool = False,
     ) -> Optional[Dict[str, Any]]:
         """
         Finds the GUI element that matches the description.
@@ -83,6 +84,7 @@ class OmniParserOrchestrator:
             use_paddleocr: Use PaddleOCR
             imgsz: Image size for OmniParser
             temperature: Temperature for the LLM
+            use_vision_for_selection: If True, send annotated image to LLM for selection
             
         Returns:
             Dictionary with:
@@ -127,12 +129,24 @@ class OmniParserOrchestrator:
          
         logger.debug(f"✓ {len(elements_data)} filtered elements")
         
+        # Log all filtered elements for debugging
+        logger.debug(f"Filtered elements ({element_type}):")
+        for key, data in list(elements_data.items())[:20]:  # Limit to 20 for readability
+            logger.debug(f"  - {key}: type={data['type']}, content='{data['content']}', interactive={data['interactivity']}")
+        
+        import os
+        abs_image_path = os.path.abspath(image_temp_path)
+        msg = f"</td></tr><tr><td colspan=\"3\"><img src=\"file://{abs_image_path}\" width=\"1200\"></td></tr>"
+        logger.debug(msg, html=True)
+        
         # Step 3: Select element via LLM
         logger.debug("🤖 Step 3/3: Selecting element via LLM...")
         result = self.selector.select_element(
             elements_data=elements_data,
             element_description=element_description,
             temperature=temperature,
+            use_vision=use_vision_for_selection,
+            image_path=image_temp_path if use_vision_for_selection else None,
         )
         
         if not result:

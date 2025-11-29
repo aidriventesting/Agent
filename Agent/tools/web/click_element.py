@@ -28,7 +28,7 @@ class ClickElementTool(BaseTool):
     
     @property
     def has_visual_equivalent(self) -> bool:
-        return False
+        return True
     
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
