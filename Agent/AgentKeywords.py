@@ -1,6 +1,7 @@
 from typing import Any, Dict, List, Optional
 
 from Agent.agent_engine import AgentEngine
+from Agent._test_listener import CostLoggingListener
 from robot.api.deco import keyword
 
 
@@ -18,6 +19,7 @@ class AgentKeywords:
     """
 
     ROBOT_LIBRARY_SCOPE = "GLOBAL"
+    ROBOT_LIBRARY_LISTENER = CostLoggingListener()
 
     def __init__(
         self, 

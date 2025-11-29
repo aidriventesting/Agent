@@ -2,6 +2,8 @@ from anthropic import Anthropic, APIError
 from typing import Optional, Dict, List, Union
 from robot.api import logger
 from Agent.ai.llm._baseclient import BaseLLMClient
+from Agent.config.model_config import ModelConfig
+from Agent.utilities._costtracker import CostTracker
 
 
 class AnthropicClient(BaseLLMClient):
@@ -24,6 +26,8 @@ class AnthropicClient(BaseLLMClient):
         self.default_model = model
         self.max_retries = max_retries
         self.client = Anthropic(api_key=self.api_key, max_retries=max_retries)
+        self.model_config = ModelConfig()
+        self.cost_tracker = CostTracker()
 
     def create_chat_completion(
         self,
@@ -140,13 +144,46 @@ class AnthropicClient(BaseLLMClient):
         if not (0 <= top_p <= 1):
             logger.error(f"Invalid top_p {top_p}. Must be between 0 and 1")
             raise ValueError(f"Invalid top_p {top_p}. Must be between 0 and 1")
+    
+    def _calculate_cost(self, model: str, prompt_tokens: int, completion_tokens: int) -> Dict[str, float]:
+        """
+        Calculate the cost of API call based on token usage.
+        
+        Args:
+            model: Model name used for the API call
+            prompt_tokens: Number of input tokens
+            completion_tokens: Number of output tokens
+            
+        Returns:
+            Dictionary with input_cost, output_cost, and total_cost
+        """
+        pricing = self.model_config.get_model_pricing(model)
+        
+        if not pricing:
+            logger.warn(f"No pricing information found for model: {model}. Cost will be 0.")
+            return {
+                'input_cost': 0.0,
+                'output_cost': 0.0,
+                'total_cost': 0.0
+            }
+        
+        # Pricing is per 1M tokens according to llm_models.json metadata
+        input_cost = (prompt_tokens / 1_000_000) * pricing['input']
+        output_cost = (completion_tokens / 1_000_000) * pricing['output']
+        total_cost = input_cost + output_cost
+        
+        return {
+            'input_cost': input_cost,
+            'output_cost': output_cost,
+            'total_cost': total_cost
+        }
 
     def format_response(
         self,
         response,
         include_tokens: bool = True,
         include_reason: bool = False,
-    ) -> Dict[str, Union[str, int]]:
+    ) -> Dict[str, Union[str, int, float]]:
         if not response or not response.content:
             logger.error(f"Invalid response or no content in the response")
             return {}
@@ -186,6 +223,31 @@ class AnthropicClient(BaseLLMClient):
                     "completion_tokens": response.usage.output_tokens,
                     "total_tokens": response.usage.input_tokens + response.usage.output_tokens,
                 }
+            )
+            
+            # Calculate and track cost
+            cost_data = self._calculate_cost(
+                model=response.model,
+                prompt_tokens=response.usage.input_tokens,
+                completion_tokens=response.usage.output_tokens
+            )
+            
+            result.update({
+                "input_cost": cost_data['input_cost'],
+                "output_cost": cost_data['output_cost'],
+                "total_cost": cost_data['total_cost']
+            })
+            
+            # Track cost in the cost tracker
+            self.cost_tracker.add_cost(
+                input_cost=cost_data['input_cost'],
+                output_cost=cost_data['output_cost'],
+                model=response.model
+            )
+            
+            logger.debug(
+                f"API call cost: ${cost_data['total_cost']:.6f} "
+                f"(input: ${cost_data['input_cost']:.6f}, output: ${cost_data['output_cost']:.6f})"
             )
 
         if include_reason:

@@ -1,8 +1,10 @@
 import google.generativeai as genai
 from google.generativeai.types import GenerateContentResponse
-from typing import Optional, Dict, List, Union
+from typing import Optional, Dict, List, Union, Any
 from robot.api import logger
 from Agent.ai.llm._baseclient import BaseLLMClient
+from Agent.config.model_config import ModelConfig
+from Agent.utilities._costtracker import CostTracker
 
 
 class GeminiClient(BaseLLMClient):
@@ -28,6 +30,8 @@ class GeminiClient(BaseLLMClient):
         genai.configure(api_key=self.api_key)
         model_name = model.replace("models/", "") if model.startswith("models/") else model
         self.client = genai.GenerativeModel(model_name=model_name)
+        self.model_config = ModelConfig()
+        self.cost_tracker = CostTracker()
 
     def create_chat_completion(
         self,
@@ -165,13 +169,112 @@ class GeminiClient(BaseLLMClient):
         if not (0 <= top_p <= 1):
             logger.error(f"Invalid top_p {top_p}. Must be between 0 and 1")
             raise ValueError(f"Invalid top_p {top_p}. Must be between 0 and 1")
+    
+    def _convert_protobuf_to_dict(self, obj: Any) -> Any:
+        """
+        Convert protobuf objects (like RepeatedComposite, Struct, etc.) to native Python types.
+        This is needed because Gemini API returns protobuf objects that aren't JSON serializable.
+        
+        Args:
+            obj: Protobuf object or native Python type
+            
+        Returns:
+            Native Python type (dict, list, str, int, float, bool, None)
+        """
+        # Handle None
+        if obj is None:
+            return None
+        
+        # Handle native Python types
+        if isinstance(obj, (str, int, float, bool)):
+            return obj
+        
+        # Handle protobuf RepeatedComposite (list-like)
+        if hasattr(obj, '__iter__') and not isinstance(obj, (str, bytes)):
+            try:
+                # Check if it's a protobuf repeated field
+                if hasattr(obj, '__class__') and 'Repeated' in str(type(obj)):
+                    return [self._convert_protobuf_to_dict(item) for item in obj]
+                # Regular list/tuple
+                elif isinstance(obj, (list, tuple)):
+                    return [self._convert_protobuf_to_dict(item) for item in obj]
+            except (TypeError, AttributeError):
+                pass
+        
+        # Handle protobuf Struct/Map (dict-like)
+        if hasattr(obj, 'items'):
+            try:
+                result = {}
+                for key, value in obj.items():
+                    result[str(key)] = self._convert_protobuf_to_dict(value)
+                return result
+            except (TypeError, AttributeError):
+                pass
+        
+        # Handle protobuf message objects
+        if hasattr(obj, 'DESCRIPTOR') or hasattr(obj, 'ListFields'):
+            try:
+                result = {}
+                # Try to get all fields
+                if hasattr(obj, 'ListFields'):
+                    for field, value in obj.ListFields():
+                        result[field.name] = self._convert_protobuf_to_dict(value)
+                # Fallback: try to access as dict
+                elif hasattr(obj, '__dict__'):
+                    for key, value in obj.__dict__.items():
+                        if not key.startswith('_'):
+                            result[key] = self._convert_protobuf_to_dict(value)
+                return result
+            except (TypeError, AttributeError):
+                pass
+        
+        # Fallback: convert to string if all else fails
+        try:
+            return str(obj)
+        except Exception:
+            return None
+    
+    def _calculate_cost(self, model: str, prompt_tokens: int, completion_tokens: int) -> Dict[str, float]:
+        """
+        Calculate the cost of API call based on token usage.
+        
+        Args:
+            model: Model name used for the API call
+            prompt_tokens: Number of input tokens
+            completion_tokens: Number of output tokens
+            
+        Returns:
+            Dictionary with input_cost, output_cost, and total_cost
+        """
+        # Clean model name (remove models/ prefix if present)
+        model_name = model.replace("models/", "") if model.startswith("models/") else model
+        pricing = self.model_config.get_model_pricing(model_name)
+        
+        if not pricing:
+            logger.warn(f"No pricing information found for model: {model_name}. Cost will be 0.")
+            return {
+                'input_cost': 0.0,
+                'output_cost': 0.0,
+                'total_cost': 0.0
+            }
+        
+        # Pricing is per 1M tokens according to llm_models.json metadata
+        input_cost = (prompt_tokens / 1_000_000) * pricing['input']
+        output_cost = (completion_tokens / 1_000_000) * pricing['output']
+        total_cost = input_cost + output_cost
+        
+        return {
+            'input_cost': input_cost,
+            'output_cost': output_cost,
+            'total_cost': total_cost
+        }
 
     def format_response(
         self,
         response: GenerateContentResponse,
         include_tokens: bool = True,
         include_reason: bool = False,
-    ) -> Dict[str, Union[str, int]]:
+    ) -> Dict[str, Union[str, int, float]]:
         if not response or not response.candidates:
             logger.error(f"Invalid response or no candidates in the response")
             return {}
@@ -202,9 +305,8 @@ class GeminiClient(BaseLLMClient):
                 if hasattr(part, 'function_call') and part.function_call:
                     fc = part.function_call
                     # Convert arguments to dict (they are Struct/Map)
-                    args = {}
-                    for key, value in fc.args.items():
-                        args[key] = value
+                    # Need to convert protobuf objects to native Python types
+                    args = self._convert_protobuf_to_dict(fc.args)
                     
                     tool_calls.append({
                         "id": "call_" + fc.name,  # Gemini doesn't provide ID
@@ -232,6 +334,37 @@ class GeminiClient(BaseLLMClient):
                     "total_tokens": total_tokens,
                 }
             )
+            
+            # Calculate and track cost
+            # Get the actual model name from response
+            model_name = self.default_model
+            if hasattr(response, '_result') and hasattr(response._result, 'model_version'):
+                model_name = response._result.model_version
+            
+            cost_data = self._calculate_cost(
+                model=model_name,
+                prompt_tokens=prompt_tokens,
+                completion_tokens=completion_tokens
+            )
+            
+            result.update({
+                "input_cost": cost_data['input_cost'],
+                "output_cost": cost_data['output_cost'],
+                "total_cost": cost_data['total_cost']
+            })
+            
+            # Track cost in the cost tracker
+            self.cost_tracker.add_cost(
+                input_cost=cost_data['input_cost'],
+                output_cost=cost_data['output_cost'],
+                model=model_name
+            )
+            
+            logger.debug(
+                f"API call cost: ${cost_data['total_cost']:.6f} "
+                f"(input: ${cost_data['input_cost']:.6f}, output: ${cost_data['output_cost']:.6f})"
+            )
+            
         if include_reason and response.candidates:
             logger.debug(f"Finish reason: {finish_reason_name}")
             result["finish_reason"] = finish_reason_name
