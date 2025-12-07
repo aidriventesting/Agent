@@ -56,13 +56,6 @@ class OmniParserClient:
         image_base64: Optional[str] = None,
         image_name: Optional[str] = None,
     ) -> Iterator[Any]:
-        """
-        Resolve the image input into a gradio `handle_file` payload.
-
-        Yields
-        ------
-        handle_file(...) result
-        """
         temp_path: Optional[str] = None
         try:
             if image_path:
@@ -173,15 +166,3 @@ class OmniParserClient:
         logger.debug(f"OmniParser parsed text: {len(text_result)} bytes")
         
         return image_path_result, text_result
-
-
-#quick test
-if __name__ == "__main__":
-    client = OmniParserClient()
-    image_temp_path, response_text = client.parse_image(
-        image_path="tests/_data/images/screenshots/screenshot-Google Pixel 5-11.0.png"
-    )
-    print("=" * 80)
-    print(f"{image_temp_path}")
-    print("=" * 80)
-    print(f"{response_text}")

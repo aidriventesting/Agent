@@ -5,21 +5,7 @@ from Agent.ai.llm.facade import UnifiedLLMFacade
 
 
 class OmniParserElementSelector:
-    """
-    Selects a GUI element using ChatGPT.
-    
-    Takes a dictionary of elements and a description,
-    then asks the AI to find the matching element.
-    """
-
     def __init__(self, provider: str = "openai", model: str = "gpt-4o-mini") -> None:
-        """
-        Initializes the selector with the AI model.
-        
-        Args:
-            provider: The AI provider (openai, anthropic, etc.)
-            model: The model to use
-        """
         self.llm = UnifiedLLMFacade(provider=provider, model=model)
         logger.info(f"OmniParserElementSelector initialized with {provider}/{model}")
 
@@ -84,16 +70,6 @@ class OmniParserElementSelector:
         use_vision: bool = False,
         image_path: Optional[str] = None,
     ) -> list:
-        """
-        Builds the prompt for the AI.
-        
-        Args:
-            elements_data: The available UI elements
-            element_description: The description of the element being searched for
-            
-        Returns:
-            List of messages for the AI
-        """
         # Format elements in a readable way
         elements_text = self._format_elements(elements_data)
         
@@ -151,15 +127,6 @@ Find the element that best matches this description."""
         ]
 
     def _format_elements(self, elements_data: Dict[str, Dict[str, Any]]) -> str:
-        """
-        Formats elements for the prompt.
-        
-        Args:
-            elements_data: The elements to format
-            
-        Returns:
-            Formatted string of elements
-        """
         lines = []
         for key, data in elements_data.items():
             content = data.get("content", "")
@@ -206,35 +173,3 @@ Find the element that best matches this description."""
             "confidence": response.get("confidence", "unknown"),
             "reason": response.get("reason", ""),
         }
-
-
-# Quick test
-if __name__ == "__main__":
-    # Example data
-    test_data = {
-        'icon3': {
-            'type': 'icon',
-            'bbox': [0.41938668489456177, 0.17028668522834778, 0.5745916366577148, 0.2660691440105438],
-            'interactivity': True,
-            'content': 'YouTube '
-        },
-        'icon9': {
-            'type': 'icon',
-            'bbox': [0.23282678425312042, 0.17132169008255005, 0.38811373710632324, 0.26554766297340393],
-            'interactivity': True,
-            'content': 'Gmail '
-        },
-        'icon22': {
-            'type': 'icon',
-            'bbox': [0.05158957466483116, 0.639639139175415, 0.2134605348110199, 0.7337194681167603],
-            'interactivity': True,
-            'content': 'Chrome '
-        }
-    }
-    
-    selector = OmniParserElementSelector()
-    result = selector.select_element(test_data, "YouTube")
-    
-    print("=" * 80)
-    print(f"Result: {result}")
-
