@@ -18,6 +18,22 @@ class UnifiedLLMFacade:
         self._client = LLMClientFactory.create_client(provider, model=model)
         self._provider = provider.lower()
 
+    def send_ai_request(
+        self,
+        messages: List[Dict[str, Any]],
+        temperature: float = 0.0,
+        **kwargs: Any,
+    ) -> str:
+        """Send request and return raw text content."""
+        logger.debug("🚀 Sending request to AI model...")
+        response = self._client.create_chat_completion(
+            messages=messages,
+            temperature=temperature,
+            **kwargs,
+        )
+        formatted = self._client.format_response(response)
+        return formatted.get("content", "")
+
     #TODO : unite the two methods(send_ai_request_and_return_response and send_ai_request_with_tools) into one
     def send_ai_request_and_return_response(
         self,
