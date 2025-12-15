@@ -25,21 +25,18 @@ class ToolRegistry:
         """Register a tool in the registry."""
         if tool.name in self._tools:
             existing_tool = self._tools[tool.name]
-            # Skip silently if it's the same tool class (re-registration is normal)
+            # TODO: review currently silently overwriting
             if type(existing_tool) == type(tool):
                 return
-            # Warn only if different tool class is replacing
             logger.warn(f"Tool '{tool.name}' already registered with different class. Overwriting.")
         
         self._tools[tool.name] = tool
         logger.debug(f"Registered tool: {tool.name} ({tool.category})")
     
     def get(self, name: str) -> Optional[BaseTool]:
-        """Get a tool by name."""
         return self._tools.get(name)
     
     def get_all(self) -> List[BaseTool]:
-        """Get all registered tools."""
         return list(self._tools.values())
     
     def get_by_category(self, category: Union[ToolCategory, str]) -> List[BaseTool]:
@@ -73,38 +70,31 @@ class ToolRegistry:
         
         Args:
             category: ToolCategory or string ('mobile', 'web', 'visual')
-            mode: 'xml', 'visual', or 'hybrid'
+            mode: 'xml' or 'visual'
         
         Returns:
             Filtered list of tools based on mode
         """
         all_tools = self.get_by_category(category)
         
-        if mode == "xml":
-            # XML only: Exclude tools that ONLY work on visual (not on locator)
-            return [
-                tool for tool in all_tools 
-                if not (tool.works_on_visual and not tool.works_on_locator)
-            ]
-        
-        elif mode == "visual":
-            # Visual only: Exclude ONLY tools that have a visual equivalent
-            # Keep tools without visual equivalent (like input_text) even if they only work on locators
+        if mode == "visual":
+            # Visual only: Exclude tools that have a visual equivalent (use visual versions)
             return [
                 tool for tool in all_tools
                 if not tool.has_visual_equivalent
             ]
         
-        else:  # hybrid
-            # Hybrid: Return ALL tools, let AI choose between equivalents
-            return all_tools
+        else:  # xml (default)
+            # XML only: Exclude tools that ONLY work on visual (not on locator)
+            return [
+                tool for tool in all_tools 
+                if not (tool.works_on_visual and not tool.works_on_locator)
+            ]
     
     def clear(self) -> None:
-        """Clear all registered tools (useful for testing)."""
         self._tools.clear()
     
     def list_tools(self) -> str:
-        """Return a formatted string of all registered tools."""
         if not self._tools:
             return "No tools registered"
         
