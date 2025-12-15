@@ -27,6 +27,7 @@ class UnifiedLLMFacade:
     ) -> Dict[str, Any]:
         """Sends a request to the AI model and returns a parsed JSON response."""
         logger.debug("🚀 Sending request to AI model...")
+        logger.debug(f"📝 Prompt: {json.dumps(messages, indent=2)}")
         
         # Only OpenAI and Ollama support response_format parameter
         if isinstance(self._client, (OpenAIClient, OllamaClient)):
@@ -55,6 +56,7 @@ class UnifiedLLMFacade:
     ) -> Dict[str, Any]:
         """Sends a request to the AI model with tool calling enabled."""
         logger.debug("🚀 Sending request to AI model with tools...")
+        logger.debug(f"📝 Prompt: {json.dumps(messages, indent=2)}")
         logger.debug(f"   Tools: {[t['function']['name'] for t in tools]}")
         
         response = self._client.create_chat_completion(
