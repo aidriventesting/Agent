@@ -50,6 +50,19 @@ class AgentKeywords:
         """
         self.engine.visual_check(instruction)
 
+    def ask(self, question: str, format: str = "text") -> str:
+        """Agent.Ask <question>    format=text|json
+        Example: Agent.Ask    What is the product price?
+        Example: Agent.Ask    List all buttons    format=json
+        """
+        return self.engine.ask(question, response_format=format)
+
+    def find_visual_element(self, description: str, format: str = "center"):
+        """Agent.Find Visual Element <description>    format=normalized|pixels|center
+        Example: Agent.Find Visual Element    Login button
+        Example: Agent.Find Visual Element    Search icon    format=pixels
+        """
+        return self.engine.find_visual_element(description, format=format)
 
     def autonumous(self, instruction: str):
         """Agent.Autonumous <instruction>

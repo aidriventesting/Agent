@@ -167,3 +167,33 @@ class AgentPromptComposer:
         Returns tool specs in standard format (works with OpenAI, Anthropic, Gemini, etc.)
         """
         return self.registry.get_tool_specs(category=ToolCategory.VISUAL)
+
+    def compose_ask_messages(
+        self,
+        question: str,
+        screenshot_base64: str,
+        response_format: str = "text",
+    ) -> List[Dict[str, Any]]:
+        """Build messages for asking AI about current screen."""
+        if response_format == "json":
+            system_content = (
+                "You are a screen analysis assistant. "
+                "Answer questions about what you see in the screenshot. "
+                "IMPORTANT: Always respond with valid JSON only, no markdown, no explanation outside JSON."
+            )
+        else:
+            system_content = (
+                "You are a screen analysis assistant. "
+                "Answer questions about what you see in the screenshot. "
+                "Be concise and direct."
+            )
+        
+        user_content = [
+            {"type": "text", "text": question},
+            {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{screenshot_base64}"}}
+        ]
+        
+        return [
+            {"role": "system", "content": system_content},
+            {"role": "user", "content": user_content}
+        ]
