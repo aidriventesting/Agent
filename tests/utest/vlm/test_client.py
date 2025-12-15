@@ -12,7 +12,7 @@ class TestOmniParserClient(unittest.TestCase):
         
         client = OmniParserClient()
         image_temp_path, response_text = client.parse_image(
-            image_path="tests/_data/images/screenshots/screenshot-Google Pixel 5-11.0.png"
+            image_path="tests/_data/mobilescreenshots/screenshot-Google Pixel 5-11.0.png"
         )
         
         self.assertIsInstance(image_temp_path, str)
