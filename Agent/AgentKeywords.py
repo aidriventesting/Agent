@@ -26,13 +26,15 @@ class AgentKeywords:
         llm_client: str = "openai", 
         llm_model: str = "gpt-4o-mini",
         platform_type: str = "auto",
-        click_mode: str = "hybrid"
+        click_mode: str = "xml",
+        input_mode: str = "text",
     ):
         self.engine = AgentEngine(
             llm_client=llm_client, 
             llm_model=llm_model,
             platform_type=platform_type,
-            click_mode=click_mode
+            click_mode=click_mode,
+            input_mode=input_mode,
         )
 
     # ----------------------- Public RF Keywords -----------------------
