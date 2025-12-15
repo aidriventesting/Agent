@@ -95,6 +95,12 @@ def _register_builtin_collectors():
         CollectorRegistry.register("js_query", JSQueryCollector)
     except ImportError as e:
         logger.warn(f"Could not register JSQueryCollector: {e}")
+    
+    try:
+        from Agent.platforms.collectors.xml_collector import XMLCollector
+        CollectorRegistry.register("xml", XMLCollector)
+    except ImportError as e:
+        logger.warn(f"Could not register XMLCollector: {e}")
 
 
 # Auto-register on module import
