@@ -1,25 +1,13 @@
 from abc import ABC, abstractmethod
-from typing import Any, Dict, Protocol
+from typing import Any, Dict
 from enum import Enum
+from Agent.core.interfaces import ExecutorProtocol
 
 
 class ToolCategory(Enum):
-    """Enum for tool categories - type-safe categories."""
     MOBILE = "mobile"
     WEB = "web"
     VISUAL = "visual"
-
-
-class ExecutorProtocol(Protocol):
-    """Protocol defining what an executor must implement for tool execution."""
-    
-    def run_keyword(self, keyword_name: str, *args: Any) -> Any:
-        """Execute a platform-specific keyword/action."""
-        ...
-    
-    def build_locator(self, element: Dict[str, Any]) -> str:
-        """Build a locator string from element attributes."""
-        ...
 
 
 class BaseTool(ABC):

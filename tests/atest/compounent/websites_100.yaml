@@ -1,0 +1,413 @@
+websites:
+  # ========== Sites Démo (20) ==========
+  - url: "https://the-internet.herokuapp.com/login"
+    name: "HerokuApp_Login"
+    category: "demo"
+  
+  - url: "https://www.saucedemo.com"
+    name: "SauceDemo"
+    category: "demo"
+  
+  - url: "https://demoqa.com"
+    name: "DemoQA"
+    category: "demo"
+  
+  - url: "https://the-internet.herokuapp.com/dropdown"
+    name: "HerokuApp_Dropdown"
+    category: "demo"
+  
+  - url: "https://the-internet.herokuapp.com/checkboxes"
+    name: "HerokuApp_Checkboxes"
+    category: "demo"
+  
+  - url: "https://the-internet.herokuapp.com/inputs"
+    name: "HerokuApp_Inputs"
+    category: "demo"
+  
+  - url: "https://the-internet.herokuapp.com/upload"
+    name: "HerokuApp_Upload"
+    category: "demo"
+  
+  - url: "https://the-internet.herokuapp.com/tables"
+    name: "HerokuApp_Tables"
+    category: "demo"
+  
+  - url: "https://the-internet.herokuapp.com/iframe"
+    name: "HerokuApp_IFrame"
+    category: "demo"
+  
+  - url: "https://the-internet.herokuapp.com/dynamic_loading/1"
+    name: "HerokuApp_DynamicLoading"
+    category: "demo"
+  
+  - url: "https://automationexercise.com"
+    name: "AutomationExercise"
+    category: "demo"
+  
+  - url: "https://www.globalsqa.com/angularJs-protractor/BankingProject"
+    name: "XYZ_Bank"
+    category: "demo"
+  
+  - url: "https://opensource-demo.orangehrmlive.com"
+    name: "OrangeHRM_Demo"
+    category: "demo"
+  
+  - url: "https://phptravels.com/demo"
+    name: "PHPTravels_Demo"
+    category: "demo"
+  
+  - url: "https://demo.opencart.com"
+    name: "OpenCart_Demo"
+    category: "demo"
+  
+  - url: "https://demo.nopcommerce.com"
+    name: "NopCommerce_Demo"
+    category: "demo"
+  
+  - url: "https://magento.softwaretestingboard.com"
+    name: "Magento_Demo"
+    category: "demo"
+  
+  - url: "https://practice.expandtesting.com"
+    name: "ExpandTesting_Practice"
+    category: "demo"
+  
+  - url: "https://testpages.eviltester.com/styled/index.html"
+    name: "EvilTester_Pages"
+    category: "demo"
+  
+  - url: "https://play1.automationcamp.ir/index.html"
+    name: "AutomationCamp"
+    category: "demo"
+
+  # ========== Sites Production Simples (20) ==========
+  - url: "https://example.com"
+    name: "Example"
+    category: "simple"
+  
+  - url: "https://info.cern.ch"
+    name: "CERN_FirstWebsite"
+    category: "simple"
+  
+  - url: "https://www.w3.org"
+    name: "W3C"
+    category: "simple"
+  
+  - url: "https://www.iana.org"
+    name: "IANA"
+    category: "simple"
+  
+  - url: "https://www.rfc-editor.org"
+    name: "RFC_Editor"
+    category: "simple"
+  
+  - url: "https://www.kernel.org"
+    name: "Kernel_Org"
+    category: "simple"
+  
+  - url: "https://www.debian.org"
+    name: "Debian"
+    category: "simple"
+  
+  - url: "https://www.python.org"
+    name: "Python_Org"
+    category: "simple"
+  
+  - url: "https://www.npmjs.com"
+    name: "NPM"
+    category: "simple"
+  
+  - url: "https://pypi.org"
+    name: "PyPI"
+    category: "simple"
+  
+  - url: "https://www.rust-lang.org"
+    name: "Rust_Lang"
+    category: "simple"
+  
+  - url: "https://golang.org"
+    name: "Go_Lang"
+    category: "simple"
+  
+  - url: "https://www.ruby-lang.org"
+    name: "Ruby_Lang"
+    category: "simple"
+  
+  - url: "https://www.php.net"
+    name: "PHP_Net"
+    category: "simple"
+  
+  - url: "https://www.perl.org"
+    name: "Perl_Org"
+    category: "simple"
+  
+  - url: "https://www.scala-lang.org"
+    name: "Scala_Lang"
+    category: "simple"
+  
+  - url: "https://kotlinlang.org"
+    name: "Kotlin_Lang"
+    category: "simple"
+  
+  - url: "https://www.sqlite.org"
+    name: "SQLite"
+    category: "simple"
+  
+  - url: "https://www.postgresql.org"
+    name: "PostgreSQL"
+    category: "simple"
+  
+  - url: "https://www.nginx.com"
+    name: "Nginx"
+    category: "simple"
+
+  # ========== Sites Riches en Texte (15) ==========
+  - url: "https://en.wikipedia.org/wiki/Python_(programming_language)"
+    name: "Wikipedia_Python"
+    category: "text"
+  
+  - url: "https://en.wikipedia.org/wiki/Artificial_intelligence"
+    name: "Wikipedia_AI"
+    category: "text"
+  
+  - url: "https://en.wikipedia.org/wiki/JavaScript"
+    name: "Wikipedia_JavaScript"
+    category: "text"
+  
+  - url: "https://en.wikipedia.org/wiki/Web_development"
+    name: "Wikipedia_WebDev"
+    category: "text"
+  
+  - url: "https://en.wikipedia.org/wiki/Software_testing"
+    name: "Wikipedia_Testing"
+    category: "text"
+  
+  - url: "https://en.wikipedia.org/wiki/Machine_learning"
+    name: "Wikipedia_ML"
+    category: "text"
+  
+  - url: "https://en.wikipedia.org/wiki/Data_science"
+    name: "Wikipedia_DataScience"
+    category: "text"
+  
+  - url: "https://en.wikipedia.org/wiki/Cloud_computing"
+    name: "Wikipedia_Cloud"
+    category: "text"
+  
+  - url: "https://en.wikipedia.org/wiki/Blockchain"
+    name: "Wikipedia_Blockchain"
+    category: "text"
+  
+  - url: "https://en.wikipedia.org/wiki/Cybersecurity"
+    name: "Wikipedia_Cybersecurity"
+    category: "text"
+  
+  - url: "https://www.bbc.com/news"
+    name: "BBC_News"
+    category: "text"
+  
+  - url: "https://www.theguardian.com/technology"
+    name: "Guardian_Tech"
+    category: "text"
+  
+  - url: "https://dev.to"
+    name: "DevTo"
+    category: "text"
+  
+  - url: "https://www.freecodecamp.org/news"
+    name: "FreeCodeCamp_News"
+    category: "text"
+  
+  - url: "https://www.smashingmagazine.com"
+    name: "Smashing_Magazine"
+    category: "text"
+
+  # ========== Sites Riches en Images (15) ==========
+  - url: "https://unsplash.com"
+    name: "Unsplash"
+    category: "images"
+  
+  - url: "https://www.pexels.com"
+    name: "Pexels"
+    category: "images"
+  
+  - url: "https://pixabay.com"
+    name: "Pixabay"
+    category: "images"
+  
+  - url: "https://www.flickr.com/explore"
+    name: "Flickr_Explore"
+    category: "images"
+  
+  - url: "https://500px.com"
+    name: "500px"
+    category: "images"
+  
+  - url: "https://www.behance.net"
+    name: "Behance"
+    category: "images"
+  
+  - url: "https://dribbble.com"
+    name: "Dribbble"
+    category: "images"
+  
+  - url: "https://www.awwwards.com"
+    name: "Awwwards"
+    category: "images"
+  
+  - url: "https://www.deviantart.com"
+    name: "DeviantArt"
+    category: "images"
+  
+  - url: "https://www.artstation.com"
+    name: "ArtStation"
+    category: "images"
+  
+  - url: "https://www.shutterstock.com"
+    name: "Shutterstock"
+    category: "images"
+  
+  - url: "https://stock.adobe.com"
+    name: "Adobe_Stock"
+    category: "images"
+  
+  - url: "https://www.gettyimages.com"
+    name: "Getty_Images"
+    category: "images"
+  
+  - url: "https://www.istockphoto.com"
+    name: "iStock"
+    category: "images"
+  
+  - url: "https://burst.shopify.com"
+    name: "Burst_Shopify"
+    category: "images"
+
+  # ========== Applications SPA/React (15) ==========
+  - url: "https://react-shopping-cart-67954.firebaseapp.com"
+    name: "React_ShoppingCart"
+    category: "spa"
+  
+  - url: "https://todomvc.com/examples/react"
+    name: "TodoMVC_React"
+    category: "spa"
+  
+  - url: "https://todomvc.com/examples/vue"
+    name: "TodoMVC_Vue"
+    category: "spa"
+  
+  - url: "https://todomvc.com/examples/angular"
+    name: "TodoMVC_Angular"
+    category: "spa"
+  
+  - url: "https://reactjs.org"
+    name: "React_Homepage"
+    category: "spa"
+  
+  - url: "https://vuejs.org"
+    name: "Vue_Homepage"
+    category: "spa"
+  
+  - url: "https://angular.io"
+    name: "Angular_Homepage"
+    category: "spa"
+  
+  - url: "https://svelte.dev"
+    name: "Svelte_Homepage"
+    category: "spa"
+  
+  - url: "https://nextjs.org"
+    name: "NextJS_Homepage"
+    category: "spa"
+  
+  - url: "https://nuxtjs.org"
+    name: "NuxtJS_Homepage"
+    category: "spa"
+  
+  - url: "https://www.gatsbyjs.com"
+    name: "Gatsby_Homepage"
+    category: "spa"
+  
+  - url: "https://remix.run"
+    name: "Remix_Homepage"
+    category: "spa"
+  
+  - url: "https://astro.build"
+    name: "Astro_Homepage"
+    category: "spa"
+  
+  - url: "https://qwik.builder.io"
+    name: "Qwik_Homepage"
+    category: "spa"
+  
+  - url: "https://solidjs.com"
+    name: "Solid_Homepage"
+    category: "spa"
+
+  # ========== Réseaux Sociaux / Forums (10) ==========
+  - url: "https://news.ycombinator.com"
+    name: "HackerNews"
+    category: "social"
+  
+  - url: "https://www.reddit.com/r/programming"
+    name: "Reddit_Programming"
+    category: "social"
+  
+  - url: "https://www.reddit.com/r/webdev"
+    name: "Reddit_WebDev"
+    category: "social"
+  
+  - url: "https://stackoverflow.com"
+    name: "StackOverflow"
+    category: "social"
+  
+  - url: "https://github.com/explore"
+    name: "GitHub_Explore"
+    category: "social"
+  
+  - url: "https://github.com/trending"
+    name: "GitHub_Trending"
+    category: "social"
+  
+  - url: "https://www.producthunt.com"
+    name: "ProductHunt"
+    category: "social"
+  
+  - url: "https://lobste.rs"
+    name: "Lobsters"
+    category: "social"
+  
+  - url: "https://slashdot.org"
+    name: "Slashdot"
+    category: "social"
+  
+  - url: "https://www.indiehackers.com"
+    name: "IndieHackers"
+    category: "social"
+
+  # ========== E-commerce (5) ==========
+  - url: "https://www.amazon.com"
+    name: "Amazon"
+    category: "ecommerce"
+  
+  - url: "https://www.ebay.com"
+    name: "eBay"
+    category: "ecommerce"
+  
+  - url: "https://www.etsy.com"
+    name: "Etsy"
+    category: "ecommerce"
+  
+  - url: "https://www.aliexpress.com"
+    name: "AliExpress"
+    category: "ecommerce"
+  
+  - url: "https://www.shopify.com"
+    name: "Shopify"
+    category: "ecommerce"
+
+
+
+
+
+

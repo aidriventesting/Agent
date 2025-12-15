@@ -6,8 +6,7 @@ from Agent.ai._promptcomposer import AgentPromptComposer
 from Agent.utilities.imguploader.imghandler import ImageUploader
 from Agent.tools.registry import ToolRegistry
 from Agent.tools.base import ToolCategory
-from Agent.executors.mobile_executor import MobileExecutor
-from Agent.executors.web_executor import WebExecutor
+from Agent.core.keyword_runner import KeywordRunner
 from Agent.tools.mobile import MOBILE_TOOLS
 from Agent.tools.web import WEB_TOOLS
 from Agent.tools.visual import VISUAL_TOOLS
@@ -32,7 +31,8 @@ class AgentEngine:
         llm_model: str = "gpt-4o-mini",
         platform: Optional[Union[DeviceConnector, WebConnectorRF]] = None,
         platform_type: str = "auto",
-        click_mode: str = "hybrid"
+        click_mode: str = "xml",
+        input_mode: str = "text",
     ) -> None:
         # Platform connector - create or use provided
         if platform is None:
@@ -51,12 +51,9 @@ class AgentEngine:
         )
         self.image_uploader = ImageUploader(service="auto")
         
-        # Tool execution components - create appropriate executor
+        # Tool execution components
         self.tool_registry = ToolRegistry()
-        if platform_name == "web":
-            self.executor = WebExecutor(self.platform)
-        else:
-            self.executor = MobileExecutor(self.platform)
+        self.executor = KeywordRunner(self.platform)
         
         # Register tools based on platform
         if platform_name == "web":
@@ -65,9 +62,10 @@ class AgentEngine:
             self._register_mobile_tools()
         self._register_visual_tools()
         
-        # Click strategy
+        # Click strategy and input mode
         self.click_mode = click_mode
-        logger.info(f"🎯 Click mode: {click_mode}")
+        self.input_mode = input_mode
+        logger.info(f"🎯 Click mode: {click_mode}, Input mode: {input_mode}")
     
     def _register_mobile_tools(self) -> None:
         """Register all mobile tools in the registry."""
@@ -99,13 +97,25 @@ class AgentEngine:
         """Change click mode dynamically during test execution.
         
         Args:
-            mode: 'xml', 'visual', or 'hybrid'
+            mode: 'xml' or 'visual'
         """
-        if mode not in ["xml", "visual", "hybrid"]:
-            raise ValueError(f"Invalid click_mode: {mode}. Choose: xml, visual, hybrid")
+        if mode not in ["xml", "visual"]:
+            raise ValueError(f"Invalid click_mode: {mode}. Choose: xml, visual")
         
         self.click_mode = mode
         logger.info(f"🔧 Click mode changed to: {mode}")
+    
+    def set_input_mode(self, mode: str) -> None:
+        """Change input mode dynamically during test execution.
+        
+        Args:
+            mode: 'text' (numbered list) or 'som' (screenshot with numbered boxes)
+        """
+        if mode not in ["text", "som"]:
+            raise ValueError(f"Invalid input_mode: {mode}. Choose: text, som")
+        
+        self.input_mode = mode
+        logger.info(f"🔧 Input mode changed to: {mode}")
     
     def do(self, instruction: str) -> None:
         """Execute AI-driven action based on natural language instruction.
@@ -115,20 +125,21 @@ class AgentEngine:
         """
         logger.info(f"🚀 Starting Agent.Do: '{instruction}'")
 
-        # Collect UI context (skip in visual mode - we only need screenshot)
+        # Collect UI context (skip in visual-only mode)
         ui_candidates = []
         if self.click_mode != "visual":
             ui_candidates = self.platform.collect_ui_candidates()
         else:
             logger.debug("⚡ UI collection skipped (mode: visual)")
         
-        # Capture screenshot if needed (based on click_mode)
+        # Capture screenshot if needed (for SoM mode or visual click mode)
         screenshot_base64 = None
-        if self.click_mode in ["visual", "hybrid"]:
+        need_screenshot = self.input_mode == "som" or self.click_mode == "visual"
+        if need_screenshot:
             screenshot_base64 = self.platform.get_screenshot_base64()
-            logger.debug(f"📸 Screenshot captured (mode: {self.click_mode})")
+            logger.debug(f"📸 Screenshot captured (input_mode: {self.input_mode})")
         else:
-            logger.debug(f"⚡ Screenshot skipped (mode: {self.click_mode})")
+            logger.debug(f"⚡ Screenshot skipped (input_mode: {self.input_mode})")
         
         # Prepare context for tool execution
         context = {
@@ -145,7 +156,9 @@ class AgentEngine:
             instruction=instruction,
             ui_elements=ui_candidates,
             platform=platform_name,
-            click_mode=self.click_mode
+            click_mode=self.click_mode,
+            input_mode=self.input_mode,
+            screenshot_base64=screenshot_base64,
         )
         tools = self.prompt_composer.get_do_tools(category=platform_name, click_mode=self.click_mode)
         

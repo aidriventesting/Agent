@@ -19,7 +19,9 @@ class AgentPromptComposer:
         instruction: str,
         ui_elements: Optional[List[Dict[str, Any]]] = None,
         platform: str = "mobile",
-        click_mode: str = "hybrid"
+        click_mode: str = "xml",
+        input_mode: str = "text",
+        screenshot_base64: Optional[str] = None,
     ) -> List[Dict[str, Any]]:
         """Build DO action messages using tool calling approach.
         
@@ -27,34 +29,30 @@ class AgentPromptComposer:
             instruction: User instruction
             ui_elements: List of UI elements
             platform: 'mobile' or 'web' - determines system prompt
-            click_mode: 'xml', 'visual', or 'hybrid' - guides AI on click strategy
+            click_mode: 'xml' or 'visual' - guides AI on click strategy
+            input_mode: 'text' (numbered list) or 'som' (screenshot with numbered boxes)
+            screenshot_base64: Screenshot for SoM mode (required if input_mode='som')
         """
         # Base system prompt
-        if platform == "mobile":
+        is_mobile = platform in ("android", "ios")
+        if is_mobile:
             system_content = (
                 "You are a MOBILE app test automation engine (Appium).\n"
                 "Your job: analyze the instruction and call the appropriate function to interact with the mobile UI.\n"
             )
             
             # Add click guidance based on mode
-            if click_mode == "xml":
-                system_content += (
-                    "\nFOR CLICKING: Use click_element(index) - select element by its index from the numbered list below.\n"
-                )
-            elif click_mode == "visual":
+            if click_mode == "visual":
                 system_content += (
                     "\nFOR CLICKING: Use click_visual_element(description) - describe the element visually.\n"
-                    "You will receive a element list coordinates. return the coordinates of the element to interact with.\n"
+                    "You will receive a screenshot. Analyze it and use visual descriptions.\n"
                 )
-            else:  # hybrid
+            else:  # xml (default)
                 system_content += (
                     "\nACTION SELECTION RULES:\n"
-                    "1. FOR TEXT INPUT (instructions with 'input', 'type', 'enter', 'fill') → ALWAYS use input_text(element_index, text) with XML index\n"
-                    "2. FOR CLICKING - You have TWO options:\n"
-                    "   a. tap_element(index): Select from numbered list - USE when element has clear ID, resource-id, or unique text\n"
-                    "   b. click_visual_element(description): Visual description - USE ONLY for icons, images, or elements WITHOUT clear XML identifiers\n"
+                    "1. FOR TEXT INPUT: Use input_text(element_index, text) - select from numbered list\n"
+                    "2. FOR CLICKING: Use tap_element(index) - select from numbered list\n"
                     "3. OTHER ACTIONS: scroll_down(), swipe_left/right/up(), long_press(index), hide_keyboard(), go_back()\n"
-                    "\nCRITICAL: input_text REQUIRES XML locator (element_index). NEVER use click_visual_element for text input actions.\n"
                 )
             
             system_content += (
@@ -67,11 +65,7 @@ class AgentPromptComposer:
             )
             
             # Add click guidance based on mode
-            if click_mode == "xml":
-                system_content += (
-                    "\nFOR INTERACTION: Use standard tools (click_element, input_text) with element index from the list.\n"
-                )
-            elif click_mode == "visual":
+            if click_mode == "visual":
                 system_content += (
                     "\nFOR INTERACTION: Use VISUAL tools:\n"
                     "- click_visual_element(description): Click element by visual description\n"
@@ -80,15 +74,13 @@ class AgentPromptComposer:
                     "- double_click_visual(description): Double click element by visual description\n"
                     "You will receive a screenshot. Analyze it and use visual descriptions.\n"
                 )
-            else:  # hybrid
+            else:  # xml (default)
                 system_content += (
                     "\nACTION SELECTION RULES:\n"
-                    "1. FOR TEXT INPUT:\n"
-                    "   a. input_text(index, text): USE DEFAULT when element is in the list (<input>, <textarea>)\n"
-                    "   b. input_text_visual(description, text): USE ONLY when element is NOT in the list or has no clear locator\n"
-                    "2. FOR CLICKING/HOVERING:\n"
-                    "   a. Standard tools (click_element, hover, double_click): USE DEFAULT when element is in the list\n"
-                    "   b. Visual tools (click_visual_element, hover_visual, double_click_visual): USE ONLY for icons, images, or elements NOT in the list\n"
+                    "1. FOR TEXT INPUT: Use input_text(index, text) for <input> or <textarea> elements\n"
+                    "2. FOR CLICKING: Use click_element(index) for <button> or <a> elements\n"
+                    "3. FOR DROPDOWN: Use select_option(index, value) for <select> elements\n"
+                    "4. OTHER: scroll_down(), scroll_up(), press_key(), go_back(), hover(), double_click()\n"
                 )
 
             system_content += (
@@ -98,18 +90,32 @@ class AgentPromptComposer:
                 "- <select> = dropdown (use select_option tool)\n"
             )
         
-        # Build user content based on mode
+        # Build user content based on input_mode
         if click_mode == "visual":
-            # Mode visual: PAS de liste UI (confusant!)
             user_content = f"Instruction: {instruction}\n\nAnalyze the screenshot and use visual description."
+        elif input_mode == "som" and screenshot_base64 and ui_elements:
+            # SoM mode: screenshot with numbered bounding boxes
+            from Agent.platforms.collectors.som_renderer import render_som
+            annotated_screenshot = render_som(screenshot_base64, ui_elements)
+            
+            ui_label = "Mobile UI Elements" if is_mobile else "Web Elements"
+            text_content = (
+                f"Instruction: {instruction}\n\n"
+                f"The screenshot shows numbered boxes on {ui_label.lower()}.\n"
+                f"Select by NUMBER from the boxes shown in the image."
+            )
+            user_content = [
+                {"type": "text", "text": text_content},
+                {"type": "image_url", "image_url": {"url": f"data:image/png;base64,{annotated_screenshot}"}}
+            ]
         else:
-            # Modes xml/hybrid: Envoyer la liste UI
+            # Text mode: numbered list
             if self.platform and ui_elements:
                 ui_text = self.platform.render_ui_for_prompt(ui_elements)
             else:
                 ui_text = "(no UI elements found)"
             
-            ui_label = "Mobile UI Elements" if platform == "mobile" else "Web Elements"
+            ui_label = "Mobile UI Elements" if is_mobile else "Web Elements"
             user_content = f"Instruction: {instruction}\n\n{ui_label}:\n{ui_text}"
         
         return [
@@ -120,7 +126,7 @@ class AgentPromptComposer:
     def get_do_tools(
         self, 
         category: str = "mobile",
-        click_mode: str = "hybrid"
+        click_mode: str = "xml"
     ) -> List[Dict[str, Any]]:
         """Return tool definitions for DO actions from the registry.
         
@@ -128,7 +134,7 @@ class AgentPromptComposer:
         
         Args:
             category: Tool category to retrieve ('mobile', 'web', or None for all)
-            click_mode: 'xml', 'visual', or 'hybrid' - filters tools based on capabilities
+            click_mode: 'xml' or 'visual' - filters tools based on capabilities
         """
         # Use registry's new filtering method
         filtered_tools = self.registry.get_tools_for_mode(category, click_mode)
