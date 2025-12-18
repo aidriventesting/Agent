@@ -193,6 +193,6 @@ appium-doctor --ios
 
 Once Appium is running:
 1. Configure your `.env` file with device capabilities
-2. Run the quickstart guide: [07-dev-setup-quickstart.md](07-dev-setup-quickstart.md)
+2. Run the quickstart guide: [01-dev-setup-quickstart.md](01-dev-setup-quickstart.md)
 3. Start writing tests with the Agent library
 

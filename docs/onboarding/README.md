@@ -49,9 +49,7 @@ docs/
 │   ├── 04-robot-framework-better-but-limited.md
 │   ├── 05-why-agentic-ai-for-automation.md
 │   └── 06-project-glossary.md
-├── 2-setup/                  # Installation and configuration guides
-├── architecture/             # System design and technical decisions
-└── api/                      # Keyword reference and usage examples
+└── 2-dev-setup/               # Installation and configuration guides
 ```
 
 ## Contributing to Docs
@@ -68,9 +66,9 @@ Keep docs:
 ## Next Steps
 
 After completing the onboarding:
-1. Check the `2-setup/` folder for installation and configuration guides
-2. Explore the codebase and architecture docs
+1. Check the `2-dev-setup/` folder for installation and configuration guides
+2. Explore the codebase
 3. Start contributing or experimenting with the agent
 
-Welcome aboard! 🚀
+Welcome aboard!
 
