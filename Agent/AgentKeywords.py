@@ -23,14 +23,16 @@ class AgentKeywords:
 
     def __init__(
         self, 
-        llm_client: str = "openai", 
-        llm_model: str = "gpt-4o-mini",
+        llm_client: str | None = None, 
+        llm_model: str | None = None,
         platform_type: str = "auto",
         click_mode: str = "xml",
         input_mode: str = "text",
     ):
+        from Agent.config.config import Config
+        
         self.engine = AgentEngine(
-            llm_client=llm_client, 
+            llm_client=llm_client or Config.DEFAULT_LLM_CLIENT, 
             llm_model=llm_model,
             platform_type=platform_type,
             click_mode=click_mode,

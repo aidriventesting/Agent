@@ -1,7 +1,4 @@
-"""
-Configuration module for AiHelper.
-Provides access to environment configurations and model configurations.
-"""
+"""Configuration for Robot Framework Agent."""
 from .config import Config
 from .model_config import ModelConfig
 
