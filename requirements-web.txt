@@ -1,0 +1,3 @@
+# Robot Framework Agent - Web Testing
+-r requirements.txt
+playwright>=1.40.0

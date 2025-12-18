@@ -1,59 +1,24 @@
 # Robot Framework Agent - Development Dependencies
-# For contributors and developers
-# Install: pip install -r requirements-dev.txt
+-r requirements-web.txt
+-r requirements-mobile.txt
 
-# ============================================================================
-# Include production dependencies
-# ============================================================================
--r requirements.txt
+# Testing
+pytest>=8.0.0
+pytest-cov>=4.1.0
+pytest-xdist>=3.5.0
 
-# ============================================================================
-# Additional LLM Providers (for testing all providers)
-# ============================================================================
-anthropic>=0.20.0           # Claude models
-google-generativeai>=0.3.0  # Gemini models
+# Code Quality
+black>=24.0.0
+flake8>=7.0.0
+mypy>=1.8.0
+isort>=5.13.0
 
-# ============================================================================
-# Vision Features (for development/testing)
-# ============================================================================
-gradio-client>=1.0.0        # OmniParser client
+# Additional LLM Providers
+anthropic>=0.20.0
+google-generativeai>=0.3.0
 
-# ============================================================================
-# Testing Tools
-# ============================================================================
-pytest>=8.0.0               # Unit testing framework
-pytest-cov>=4.1.0           # Coverage reporting
-pytest-xdist>=3.5.0         # Parallel test execution
-pytest-rerunfailures>=14.0  # Retry failed tests
+# Vision Features
+gradio-client>=2.0.0
 
-# Robot Framework testing
-robotframework-pabot>=5.0   # Parallel RF execution
-robotframework-retryfailed>=0.2.0  # Retry RF tests
-
-# ============================================================================
-# Code Quality & Formatting
-# ============================================================================
-black>=24.0.0               # Code formatter
-flake8>=7.0.0               # Linting
-mypy>=1.8.0                 # Type checking
-isort>=5.13.0               # Import sorting
-
-# ============================================================================
-# Documentation
-# ============================================================================
-sphinx>=7.0.0               # Documentation generator
-sphinx-rtd-theme>=2.0.0     # ReadTheDocs theme
-
-# ============================================================================
-# Build Tools
-# ============================================================================
-build>=1.0.0                # PEP 517 build
-twine>=5.0.0                # Package upload to PyPI
-wheel>=0.42.0               # Wheel building
-
-# ============================================================================
-# Development Utilities
-# ============================================================================
-ipython>=8.20.0             # Enhanced Python shell
-ipdb>=0.13.13               # Debugger
-pre-commit>=3.6.0           # Git hooks
+# Git Hooks
+pre-commit>=3.6.0

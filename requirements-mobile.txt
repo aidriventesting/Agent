@@ -1,0 +1,3 @@
+# Robot Framework Agent - Mobile Testing
+-r requirements.txt
+robotframework-appiumlibrary>=2.0
