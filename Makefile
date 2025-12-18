@@ -1,6 +1,6 @@
 # Makefile pour le projet Robot Framework Agent
 
-.PHONY: help install install-dev test lint format sync-requirements clean
+.PHONY: help install install-dev test lint format clean
 
 help:  ## Afficher cette aide
 	@grep -E '^[a-zA-Z_-]+:.*?## .*$$' $(MAKEFILE_LIST) | sort | awk 'BEGIN {FS = ":.*?## "}; {printf "\033[36m%-20s\033[0m %s\n", $$1, $$2}'
@@ -29,18 +29,6 @@ format:  ## Formater le code (black + isort)
 format-check:  ## Vérifier le formatage sans modifier
 	black --check Agent/ tests/
 	isort --check Agent/ tests/
-
-sync-requirements:  ## Synchroniser requirements.txt depuis pyproject.toml (nécessite pip-tools)
-	@echo "⚠️  Vérifiez que pip-tools est installé: pip install pip-tools"
-	pip-compile pyproject.toml -o requirements.txt --no-header
-	@echo "# Robot Framework Agent - Development Dependencies" > requirements-dev.tmp
-	@echo "# Install: pip install -r requirements-dev.txt" >> requirements-dev.tmp
-	@echo "" >> requirements-dev.tmp
-	@echo "-r requirements.txt  # Include production dependencies" >> requirements-dev.tmp
-	@echo "" >> requirements-dev.tmp
-	pip-compile --extra dev pyproject.toml --no-header | grep -v "robotframework\|openai\|Pillow\|tiktoken\|python-dotenv\|requests" >> requirements-dev.tmp
-	mv requirements-dev.tmp requirements-dev.txt
-	@echo "✅ requirements.txt et requirements-dev.txt synchronisés depuis pyproject.toml"
 
 clean:  ## Nettoyer les fichiers générés
 	rm -rf build/ dist/ *.egg-info

@@ -5,14 +5,15 @@ build-backend = "setuptools.build_meta"
 [project]
 name = "robotframework-agent"
 version = "0.0.1"
-description = "AI-driven test automation agent for apps using Robot Framework"
+description = "AI-driven test automation agent for apps"
 readme = "readme.md"
 requires-python = ">=3.8"
 license = {text = "CC0-1.0"}
 authors = [
-    {name = "Your Name", email = "your.email@example.com"}
+    {name = "Abdelkader HASSINE", email = "contact.abdelkaderhassine@gmail.com"},
+    {name = "Pavlo Ivashchenko", email = "pawloiwanov@gmail.com"},
 ]
-keywords = ["robotframework", "testing", "ai", "automation", "llm"]
+keywords = ["robotframework", "ai", "automation", "automation agent", "llm", "testing"]
 classifiers = [
     "Development Status :: 3 - Alpha",
     "Intended Audience :: Developers",
@@ -29,13 +30,8 @@ classifiers = [
 ]
 
 dependencies = [
-    # Core Framework
     "robotframework>=6.0",
-    "robotframework-appiumlibrary>=3.0",
-    "Appium-Python-Client>=5.0",
-    # Default LLM Provider
     "openai>=1.0.0",
-    # Utilities
     "Pillow>=10.0.0",
     "tiktoken>=0.5.0",
     "python-dotenv>=1.0.0",
@@ -43,92 +39,45 @@ dependencies = [
 ]
 
 [project.optional-dependencies]
-# Development tools for contributors
+web = [
+    "playwright>=1.40.0",
+]
+mobile = [
+    "robotframework-appiumlibrary>=3.0",
+    "Appium-Python-Client>=5.0",
+]
+test = [
+    "pytest>=8.0.0",
+    "pytest-cov>=4.1.0",
+]
 dev = [
-    # Testing
+    "playwright>=1.40.0",
+    "robotframework-appiumlibrary>=3.0",
+    "Appium-Python-Client>=5.0",
     "pytest>=8.0.0",
     "pytest-cov>=4.1.0",
     "pytest-xdist>=3.5.0",
-    "pytest-rerunfailures>=14.0",
-    "robotframework-pabot>=5.0",
-    "robotframework-retryfailed>=0.2.0",
-    # Code quality
     "black>=24.0.0",
     "flake8>=7.0.0",
     "mypy>=1.8.0",
     "isort>=5.13.0",
-    # Documentation
-    "sphinx>=7.0.0",
-    "sphinx-rtd-theme>=2.0.0",
-    # Build tools
-    "build>=1.0.0",
-    "twine>=5.0.0",
-    # Development utilities
-    "ipython>=8.20.0",
-    "ipdb>=0.13.13",
     "pre-commit>=3.6.0",
-    # All LLM providers for testing
     "anthropic>=0.20.0",
     "google-generativeai>=0.3.0",
-    # Vision features for testing
-    "gradio-client>=1.0.0",
+    "gradio-client>=2.0.0",
 ]
-
-# BrowserStack cloud testing
 browserstack = [
     "browserstack-sdk>=1.30.0",
     "browserstack-local>=1.2.0",
 ]
-
-# Additional LLM providers
 anthropic = [
     "anthropic>=0.20.0",
 ]
 gemini = [
     "google-generativeai>=0.3.0",
 ]
-all-llm = [
-    "anthropic>=0.20.0",
-    "google-generativeai>=0.3.0",
-]
-
-# Vision/VLM features
 vision = [
-    "gradio-client>=1.0.0",
-]
-
-# All extras combined
-all = [
-    # Testing
-    "pytest>=8.0.0",
-    "pytest-cov>=4.1.0",
-    "pytest-xdist>=3.5.0",
-    "pytest-rerunfailures>=14.0",
-    "robotframework-pabot>=5.0",
-    "robotframework-retryfailed>=0.2.0",
-    # Code quality
-    "black>=24.0.0",
-    "flake8>=7.0.0",
-    "mypy>=1.8.0",
-    "isort>=5.13.0",
-    # Documentation
-    "sphinx>=7.0.0",
-    "sphinx-rtd-theme>=2.0.0",
-    # Build tools
-    "build>=1.0.0",
-    "twine>=5.0.0",
-    # Development utilities
-    "ipython>=8.20.0",
-    "ipdb>=0.13.13",
-    "pre-commit>=3.6.0",
-    # All LLM providers
-    "anthropic>=0.20.0",
-    "google-generativeai>=0.3.0",
-    # Vision features
-    "gradio-client>=1.0.0",
-    # BrowserStack
-    "browserstack-sdk>=1.30.0",
-    "browserstack-local>=1.2.0",
+    "gradio-client>=2.0.0",
 ]
 
 [project.urls]
