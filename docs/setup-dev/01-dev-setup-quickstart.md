@@ -20,41 +20,17 @@ cd <REPO_NAME>
 python -m venv .venv
 source .venv/bin/activate   # Windows: .venv\Scripts\activate
 
-pip install -r requirements.txt
+pip install -e ".[dev]"
 ```
 
 ## Configure environment
 
-Create a local env file or RF variable file (example name):
-
-- `config/local.yaml`
-- or `variables.py`
-- or `variables.robot`
-
-Set at least:
-
-- LLM provider + key
-- target platform (web / android / ios)
-- device/browser settings
-- artifact output path
-
-Example (pseudo):
-
-```yaml
-llm:
-  provider: openai
-  model: gpt-4.1-mini
-  api_key: "<YOUR_KEY>"
-
-runtime:
-  platform: android
-  artifacts_dir: "./artifacts"
-```
+Copy `env.example` to `.env` and set your keys/config.
 
 ## Run a sample suite
 
 ```bash
-robot -L TRACE tests/agent_smoke.robot
+pytest tests/utest -q
 ```
 
 ## Outputs
