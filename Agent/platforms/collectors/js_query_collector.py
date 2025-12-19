@@ -47,27 +47,27 @@ JS_COLLECT_ELEMENTS = """() => {
 
 
 class JSQueryCollector(BaseUICollector):
-    """Collects UI elements using JavaScript querySelector via Playwright."""
+    """Collects UI elements using JavaScript querySelector via Browser library."""
     
     def __init__(self):
         self._browser = None
     
-    def _get_page(self):
+    def _get_browser(self):
         if self._browser is None:
             self._browser = BuiltIn().get_library_instance('Browser')
-        return self._browser.get_page()
+        return self._browser
     
     def get_name(self) -> str:
         return "js_query"
     
     def collect_elements(self, max_items: int = 300) -> List[Dict[str, Any]]:
-        """Collect interactive web elements using Playwright evaluate."""
-        logger.debug(f"[{self.get_name()}] Collecting elements via Playwright...")
+        """Collect interactive web elements using JavaScript."""
+        logger.debug(f"[{self.get_name()}] Collecting elements via JavaScript...")
         candidates = []
         
         try:
-            page = self._get_page()
-            result = page.evaluate(JS_COLLECT_ELEMENTS)
+            browser = self._get_browser()
+            result = browser.evaluate_javascript('body >> nth=0', JS_COLLECT_ELEMENTS)
             logger.debug(f"Playwright returned {len(result) if result else 0} elements")
             
             if result and isinstance(result, list):
