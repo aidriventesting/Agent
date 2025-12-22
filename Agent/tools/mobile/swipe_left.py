@@ -26,7 +26,7 @@ class SwipeLeftTool(BaseTool):
         return False  # Global screen gesture
     
     @property
-    def works_on_visual(self) -> bool:
+    def works_on_coordinates(self) -> bool:
         return False  # Works on viewport, not specific element
     
     def get_parameters_schema(self) -> Dict[str, Any]:

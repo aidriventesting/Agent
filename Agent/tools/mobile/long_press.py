@@ -1,14 +1,11 @@
 from typing import Any, Dict
 from Agent.tools.base import BaseTool, ExecutorProtocol, ToolCategory
+from Agent.tools.mobile.click_element import get_element_center
 from robot.api import logger
 
 
 class LongPressTool(BaseTool):
-    """Long press on a mobile UI element.
-    
-    Uses Appium's Tap keyword with duration parameter to simulate long press.
-    Works on both Android and iOS.
-    """
+    """Long press on a mobile UI element using coordinates."""
     
     @property
     def name(self) -> str:
@@ -16,7 +13,7 @@ class LongPressTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "Long press on a mobile UI element (hold for 2 seconds)"
+        return "Long press on element by INDEX (hold for 2 seconds)"
     
     @property
     def category(self) -> ToolCategory:
@@ -24,11 +21,11 @@ class LongPressTool(BaseTool):
     
     @property
     def works_on_locator(self) -> bool:
-        return True  # Works with XML locator
+        return True
     
     @property
-    def works_on_visual(self) -> bool:
-        return False  # AppiumLibrary keyword work on XML locator only
+    def works_on_coordinates(self) -> bool:
+        return True
     
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
@@ -58,9 +55,8 @@ class LongPressTool(BaseTool):
             )
         
         element = ui_candidates[element_index - 1]
-        locator = executor.build_locator(element)
+        x, y = get_element_center(element)
         
-        logger.debug(f"Built locator: {locator}, long pressing for 2s")
-        # Long press = Tap with duration parameter (count=1, duration=2s)
-        executor.run_keyword("Tap", locator, 1, "2s")
+        logger.debug(f"Long pressing at ({x}, {y}) for 2s")
+        executor.run_keyword("Tap", [x, y], 1, "2s")
 

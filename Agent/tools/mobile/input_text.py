@@ -1,10 +1,11 @@
 from typing import Any, Dict
 from Agent.tools.base import BaseTool, ExecutorProtocol, ToolCategory
+from Agent.tools.mobile.click_element import get_element_center
 from robot.api import logger
 
 
 class InputTextTool(BaseTool):
-    """Clear and input text into a mobile UI element."""
+    """Input text into a mobile UI element using coordinates."""
     
     @property
     def name(self) -> str:
@@ -12,7 +13,7 @@ class InputTextTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "REQUIRED for text input actions. Input text into a text field using XML element index. Use this tool when instruction contains 'input', 'type', 'enter text', or 'fill' - NEVER use click_visual_element for text input"
+        return "USE THIS when instruction contains 'input', 'type', 'enter', 'fill', 'write', 'saisir', 'taper' or mentions entering text. Types text into a text field."
     
     @property
     def category(self) -> ToolCategory:
@@ -20,11 +21,11 @@ class InputTextTool(BaseTool):
     
     @property
     def works_on_locator(self) -> bool:
-        return True  # Works with XML locator
+        return True
     
     @property
-    def works_on_visual(self) -> bool:
-        return False  # Cannot work with coordinates on iOS
+    def works_on_coordinates(self) -> bool:
+        return True
     
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
@@ -32,7 +33,7 @@ class InputTextTool(BaseTool):
             "properties": {
                 "element_index": {
                     "type": "integer",
-                    "description": "The index number of the TEXT FIELD element from the UI elements list (1-based). Find the text field in the numbered list below.",
+                    "description": "The index number of the TEXT FIELD element from the UI elements list (1-based)",
                     "minimum": 1
                 },
                 "text": {
@@ -62,9 +63,9 @@ class InputTextTool(BaseTool):
             raise AssertionError("'input_text' requires text argument")
         
         element = ui_candidates[element_index - 1]
-        locator = executor.build_locator(element)
+        x, y = get_element_center(element)
         
-        logger.debug(f"Built locator: {locator}, inputting text: '{text}'")
-        executor.run_keyword("Clear Text", locator)
-        executor.run_keyword("Input Text", locator, text)
-
+        logger.debug(f"Tapping at ({x}, {y}) to focus, then input: '{text}'")
+        executor.run_keyword("Tap", [x, y])
+        executor.run_keyword("Sleep", "1s")
+        executor.run_keyword("Input Text Into Current Element", text)

@@ -69,24 +69,21 @@ class ToolRegistry:
         """Get tools filtered by element source.
         
         Args:
-            category: ToolCategory or string ('mobile', 'web', 'visual')
-            element_source: 'dom' or 'visual'
-        
-        Returns:
-            Filtered list of tools based on element source
+            category: ToolCategory or string ('mobile')
+            element_source: 'accessibility' or 'vision'
         """
         all_tools = self.get_by_category(category)
         
-        if element_source == "visual":
+        if element_source == "vision":
             return [
                 tool for tool in all_tools
-                if not tool.has_visual_equivalent
+                if not tool.has_coordinates_alternative
             ]
         
         else:
             return [
                 tool for tool in all_tools 
-                if not (tool.works_on_visual and not tool.works_on_locator)
+                if not (tool.works_on_coordinates and not tool.works_on_locator)
             ]
     
     def clear(self) -> None:
