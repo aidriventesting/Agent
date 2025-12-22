@@ -19,10 +19,47 @@ class WebConnectorRF:
         self.collector = CollectorRegistry.create(collector_strategy)
         self.locator_builder = WebLocatorBuilder()
         self._renderer = UIRenderer()
+        self._browser = None
         logger.debug(f"WebConnectorRF initialized with collector: {collector_strategy}")
+
+    def _get_browser(self):
+        if self._browser is None:
+            self._browser = BuiltIn().get_library_instance('Browser')
+        return self._browser
 
     def get_platform(self) -> str:
         return "web"
+
+    def wait_for_page_stable(self) -> None:
+        """Wait for DOM activity then stabilize (2s after last mutation)."""
+        try:
+            browser = self._get_browser()
+            browser.evaluate_javascript('body >> nth=0', """
+                () => new Promise(resolve => {
+                    // Attendre 1s minimum avant de commencer
+                    setTimeout(() => {
+                        let mutations = 0;
+                        let timeout;
+                        const check = () => {
+                            timeout = setTimeout(() => {
+                                observer.disconnect();
+                                resolve(true);
+                            }, 2000);  // 2s de stabilité
+                        };
+                        const observer = new MutationObserver(() => {
+                            mutations++;
+                            clearTimeout(timeout);
+                            check();
+                        });
+                        observer.observe(document.body, {
+                            childList: true, subtree: true
+                        });
+                        check();  // Démarrer le timer immédiatement
+                    }, 1000);  // Délai initial de 1s
+                })
+            """)
+        except Exception:
+            pass
 
     def collect_ui_candidates(self, max_items: int = 500) -> List[Dict[str, Any]]:
         """Collect interactive web elements."""
@@ -36,7 +73,7 @@ class WebConnectorRF:
     def get_screenshot_base64(self) -> str:
         """Capture screenshot as base64."""
         try:
-            screenshot_bytes = BuiltIn().run_keyword('Take Screenshot', 'fullPage')
+            screenshot_bytes = BuiltIn().run_keyword('Take Screenshot')
             if isinstance(screenshot_bytes, bytes):
                 return base64.b64encode(screenshot_bytes).decode('utf-8')
             elif isinstance(screenshot_bytes, str):

@@ -2,14 +2,14 @@
 Documentation    Mobile device configuration for Local and BrowserStack
 Variables    ${EXECDIR}/tests/atest/config/settings.yaml
 Library    AppiumLibrary
-Library    Agent    llm_client=openai    llm_model=gpt-4o-mini
+Library    Agent    llm_client=openai    llm_model=gpt-4o   platform_type=mobile
 
 *** Keywords ***
 Open Application With Config
     [Documentation]    Opens application based on Device_location setting
     ...                Options: Local or Browserstack
     ...                element_source: tree | visual (default: tree)
-    [Arguments]    ${element_source}=tree    ${selection_mode}=text
+    [Arguments]    ${element_source}=dom    ${selection_mode}=som
     Setup Agent Mode    ${element_source}    ${selection_mode}
     Run Keyword If    '${Device_location}' == 'Local'    Open Local Application
     ...    ELSE IF    '${Device_location}' == 'Browserstack'    Open BrowserStack Application
@@ -36,7 +36,7 @@ Setup Agent Mode
     [Arguments]    ${element_source}    ${selection_mode}
     ${agent}=    Get Library Instance    Agent
     Call Method    ${agent.engine}    set_element_source    ${element_source}
-    Call Method    ${agent.engine}    set_selection_mode    ${selection_mode}
+    Call Method    ${agent.engine}    set_llm_input_format    ${selection_mode}
     Log    Agent configured - element_source: ${element_source}, selection_mode: ${selection_mode}
 
 

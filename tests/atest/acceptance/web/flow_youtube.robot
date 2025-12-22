@@ -9,39 +9,36 @@ Test YouTube Search And Interact
     [Tags]    vision    web    youtube    real-scenario
     
     Open Website    https://www.youtube.com/
-    Sleep    3s
+    # Sleep    3s
     
     # Accept cookies if present
-    Run Keyword And Ignore Error    Agent.Do    click on Accept coockies button to disappear popup
-    Sleep    2s
-    
-    # Search for a video
-    Agent.Do    click on search box
-    Sleep    1s
+    Agent.Do    click on Accept coockies button to disappear popup
+    # Sleep    2s        
     
     Agent.Do    type 'robot framework tutorial' in search box
-    Sleep    1s
+    # Sleep    1s
+
+    Sleep    2
     
     Agent.Do    press Enter key
-    Sleep    3s
+    # Sleep    3s
     
     # Click on first video
-    Agent.Do    click on the first video thumbnail
-    Sleep    5s
+    Agent.Do    click on the video of of robot framework introduction by Pekka Klärck which appears on the search results of youtube 
+    # Sleep    5s
     
     # Scroll down to comments
     Agent.Do    scroll down
-    Sleep    2s
-    Agent.Do    scroll down
-    Sleep    2s
+    # Sleep    2s
+
     
     # Read first comment (using check to verify it's visible)
     Agent.check    instruction=verify that comments section is visible
-    Sleep    1s
+    # Sleep    1s
     
     # Like the first comment
     Agent.Do    click on like button of the first comment
-    Sleep    1s
+    # Sleep    1s
     
     # Verify the like was registered
     Agent.check    instruction=verify that the like button is highlighted

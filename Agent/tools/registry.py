@@ -65,27 +65,25 @@ class ToolRegistry:
         tools = self.get_by_category(category) if category else self.get_all()
         return [tool.to_tool_spec() for tool in tools]
     
-    def get_tools_for_mode(self, category: Union[ToolCategory, str], mode: str) -> List[BaseTool]:
-        """Get tools filtered by click_mode strategy.
+    def get_tools_for_source(self, category: Union[ToolCategory, str], element_source: str) -> List[BaseTool]:
+        """Get tools filtered by element source.
         
         Args:
             category: ToolCategory or string ('mobile', 'web', 'visual')
-            mode: 'xml' or 'visual'
+            element_source: 'dom' or 'visual'
         
         Returns:
-            Filtered list of tools based on mode
+            Filtered list of tools based on element source
         """
         all_tools = self.get_by_category(category)
         
-        if mode == "visual":
-            # Visual only: Exclude tools that have a visual equivalent (use visual versions)
+        if element_source == "visual":
             return [
                 tool for tool in all_tools
                 if not tool.has_visual_equivalent
             ]
         
-        else:  # xml (default)
-            # XML only: Exclude tools that ONLY work on visual (not on locator)
+        else:
             return [
                 tool for tool in all_tools 
                 if not (tool.works_on_visual and not tool.works_on_locator)

@@ -6,8 +6,28 @@ from Agent.platforms.collectors.base_collector import BaseUICollector
 
 JS_COLLECT_ELEMENTS = """() => {
     const selectors = 'button, a, input, select, textarea, label, [type="submit"], [type="button"], [type="reset"], [type="image"], [type="checkbox"], [type="radio"], [type="file"], [type="color"], [type="date"], [type="datetime-local"], [type="email"], [type="month"], [type="number"], [type="range"], [type="search"], [type="tel"], [type="time"], [type="url"], [type="week"], [role="button"], [role="link"], [role="textbox"], [role="checkbox"], [role="radio"], [role="menuitem"], [role="tab"], [role="switch"], [role="slider"], [role="combobox"], [role="listbox"], [role="option"], [role="searchbox"], [role="spinbutton"], [role="menuitemcheckbox"], [role="menuitemradio"], [role="treeitem"], [role="gridcell"], [role="row"], [onclick], [tabindex]:not([tabindex="-1"]), [contenteditable="true"], [contenteditable=""], svg[onclick]';
-    const elements = document.querySelectorAll(selectors);
+    let elements = Array.from(document.querySelectorAll(selectors));
     const results = [];
+    
+    const allElements = document.querySelectorAll('*');
+    const semanticSet = new Set(elements);
+    
+    allElements.forEach(el => {
+        if (semanticSet.has(el)) return;
+        const tag = el.tagName.toLowerCase();
+        if (['svg', 'path', 'circle', 'rect', 'polygon', 'polyline', 'line', 'g', 'defs', 'use', 'img', 'span', 'i', 'br', 'hr'].includes(tag)) return;
+        const rect = el.getBoundingClientRect();
+        if (rect.width < 30 || rect.height < 30) return;
+        const style = window.getComputedStyle(el);
+        const hasPointer = style.cursor === 'pointer' || el.style.cursor === 'pointer';
+        const hasClick = el.onclick;
+        const hasDataAttrs = el.dataset && (el.dataset.action || el.dataset.click || el.dataset.target || el.dataset.id);
+        const className = (typeof el.className === 'string') ? el.className.toLowerCase() : '';
+        const isCardLike = className && (className.includes('item') || className.includes('card') || className.includes('row') || className.includes('tile'));
+        if (hasPointer || hasClick || hasDataAttrs || isCardLike) {
+            elements.push(el);
+        }
+    });
     elements.forEach(el => {
         try {
             const rect = el.getBoundingClientRect();
@@ -19,10 +39,11 @@ JS_COLLECT_ELEMENTS = """() => {
                 if (label) {
                     labelText = label.textContent.replace(el.textContent || '', '').trim().substring(0, 50);
                 }
+                const className = (typeof el.className === 'string') ? el.className : (el.className && el.className.baseVal) ? el.className.baseVal : '';
                 results.push({
                     text: (el.textContent || el.value || '').trim().substring(0, 100),
                     id: el.id || '',
-                    className: el.className || '',
+                    className: className,
                     name: el.name || el.getAttribute('name') || '',
                     role: el.role || el.getAttribute('role') || '',
                     ariaLabel: el.ariaLabel || el.getAttribute('aria-label') || '',
@@ -98,24 +119,7 @@ class JSQueryCollector(BaseUICollector):
             import traceback
             logger.debug(f"Traceback: {traceback.format_exc()}")
         
-        candidates = self._deduplicate_candidates(candidates)
-        candidates.sort(
-            key=lambda x: (
-                # PRIORITY 1: Input fields (text, search, email, etc.) - CRITICAL for forms
-                x.get('class_name') in ['input', 'textarea'],
-                # PRIORITY 2: Elements with placeholder/aria-label (empty inputs)
-                bool(x.get('aria_label')) or bool(x.get('placeholder')),
-                # PRIORITY 3: Elements with visible text
-                bool(x.get('text')) and len(x.get('text', '').strip()) > 0,
-                # PRIORITY 4: Elements with ID or name
-                bool(x.get('resource_id')) or bool(x.get('name')),
-                # PRIORITY 5 (last): Special input types (date, file, color, etc.)
-                x.get('type') not in ['date', 'file', 'color', 'range', 'datetime-local', 'month', 'week', 'time']
-            ),
-            reverse=True
-        )
-        
-        logger.debug(f"[{self.get_name()}] Found {len(candidates)} interactive elements after deduplication")
+        logger.debug(f"[{self.get_name()}] Found {len(candidates)} interactive elements")
         return candidates[:max_items]
 
     def _deduplicate_candidates(self, candidates: List[Dict[str, Any]]) -> List[Dict[str, Any]]:

@@ -11,10 +11,12 @@ Test Click Wikipedia Link
     Open Website    https://www.wikipedia.org/
     Sleep    2s
     
-    Agent.Do    click on English link
+    Agent.Do    click on English language 
     Sleep    1s
-    
-    Get Url    should contain    en.wikipedia.org
+
+    agent.do    click on the search input fields
+
+    agent.do    type "Robot Framework" in the search input fields
 
 Test Search On DuckDuckGo
     [Documentation]    Test searching on DuckDuckGo using vision mode

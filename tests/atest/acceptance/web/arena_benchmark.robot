@@ -15,28 +15,22 @@ Test Template    Run Arena Test
 ${ARENA_URL}    https://agent-arena-eta.vercel.app/webarena/c0/feed.html
 ${DELAY}        2
 
-*** Test Cases ***                  ELEMENT_SOURCE    SELECTION_MODE
-Text + Tree (default)               tree              text
-    [Tags]    text    tree
+*** Test Cases ***                  ELEMENT_SOURCE    LLM_INPUT_FORMAT
+Text + Tree (default)               dom              text
+    [Tags]    text    dom
 
-SoM + Tree                          tree              som
-    [Tags]    som    tree
+SoM + Tree                          dom              som
+    [Tags]    som    dom
 
-Visual Only                         visual            som
+Visual Only                         visual            visual
     [Tags]    visual
 
 *** Keywords ***
 Run Arena Test
     [Documentation]    Execute the arena benchmark test with specified modes
-    [Arguments]    ${element_source}    ${selection_mode}
+    [Arguments]    ${element_source}    ${llm_input_format}
     
-    Log    Testing: element_source=${element_source}, selection_mode=${selection_mode}    console=True
-    
-    ${agent}=    Get Library Instance    Agent
-    Call Method    ${agent.engine}    set_element_source    ${element_source}
-    Call Method    ${agent.engine}    set_selection_mode    ${selection_mode}
-    
-    Open Website    ${ARENA_URL}
+    Open Website    ${ARENA_URL}    ${element_source}    ${llm_input_format}
     Sleep    ${DELAY}s
     
     # Test 1: Navigate via sidebar

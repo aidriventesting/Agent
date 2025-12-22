@@ -162,3 +162,19 @@ class OmniParserElement:
             interactivity=self.interactivity,
             content=self.content,
         )
+
+
+if __name__ == "__main__":
+    parser = OmniParserResultProcessor(
+        response_text="""
+        icon 1: {'type': 'icon', 'bbox': [0.419, 0.17, 0.574, 0.266], 'interactivity': True, 'content': 'YouTube'}
+        icon 2: {'type': 'icon', 'bbox': [0.419, 0.17, 0.574, 0.266], 'interactivity': False, 'content': 'YouTube'}
+        icon 3: {'type': 'icon', 'bbox': [0.419, 0.17, 0.574, 0.266], 'interactivity': True, 'content': 'YouTube'}
+        icon 4: {'type': 'icon', 'bbox': [0.419, 0.17, 0.574, 0.266], 'interactivity': False, 'content': 'YouTube'}
+        icon 5: {'type': 'icon', 'bbox': [0.419, 0.17, 0.574, 0.266], 'interactivity': False, 'content': 'YouTube'}
+        icon 6: {'type': 'icon', 'bbox': [0.419, 0.17, 0.574, 0.266], 'interactivity': False, 'content': 'YouTube'}
+        icon 7: {'type': 'icon', 'bbox': [0.419, 0.17, 0.574, 0.266], 'interactivity': False, 'content': 'YouTube'}
+        icon 8: {'type': 'icon', 'bbox': [0.419, 0.17, 0.574, 0.266], 'interactivity': False, 'content': 'YouTube'}
+        """
+    )
+    print(parser.get_parsed_ui_elements(element_type="interactive"))

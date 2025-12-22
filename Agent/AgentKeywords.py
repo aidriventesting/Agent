@@ -26,8 +26,8 @@ class AgentKeywords:
         llm_client: str | None = None, 
         llm_model: str | None = None,
         platform_type: str = "auto",
-        click_mode: str = "xml",
-        input_mode: str = "text",
+        element_source: str = "dom",
+        llm_input_format: str = "text",
     ):
         from Agent.config.config import Config
         
@@ -35,8 +35,8 @@ class AgentKeywords:
             llm_client=llm_client or Config.DEFAULT_LLM_CLIENT, 
             llm_model=llm_model,
             platform_type=platform_type,
-            click_mode=click_mode,
-            input_mode=input_mode,
+            element_source=element_source,
+            llm_input_format=llm_input_format,
         )
 
     # ----------------------- Public RF Keywords -----------------------
@@ -65,6 +65,18 @@ class AgentKeywords:
         Example: Agent.Find Visual Element    Search icon    format=pixels
         """
         return self.engine.find_visual_element(description, format=format)
+
+    def set_element_source(self, source: str):
+        """Agent.Set Element Source    dom|visual
+        Example: Agent.Set Element Source    visual
+        """
+        self.engine.set_element_source(source)
+
+    def set_llm_input_format(self, format: str):
+        """Agent.Set LLM Input Format    text|som
+        Example: Agent.Set LLM Input Format    som
+        """
+        self.engine.set_llm_input_format(format)
 
     def autonumous(self, instruction: str):
         """Agent.Autonumous <instruction>

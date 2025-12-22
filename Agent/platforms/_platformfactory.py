@@ -34,15 +34,32 @@ def create_platform(platform_type: str = "auto") -> Union[DeviceConnector, WebCo
         logger.info("Creating DeviceConnector for mobile automation")
         return DeviceConnector()
     
-    else:  # auto
-        logger.info("Auto-detecting platform...")
+    else:  # auto - check which library is ACTIVE in Robot Framework
+        from robot.libraries.BuiltIn import BuiltIn
         
+        # Check if Browser is active
+        try:
+            BuiltIn().get_library_instance('Browser')
+            logger.info("Browser library active - using WebConnectorRF")
+            return WebConnectorRF()
+        except Exception:
+            pass
+        
+        # Check if AppiumLibrary is active
+        try:
+            BuiltIn().get_library_instance('AppiumLibrary')
+            logger.info("AppiumLibrary active - using DeviceConnector")
+            return DeviceConnector()
+        except Exception:
+            pass
+        
+        # Fallback to import check
         if _has_browser:
-            logger.info("Detected Browser library - using WebConnectorRF")
+            logger.info("Fallback: Browser installed - using WebConnectorRF")
             return WebConnectorRF()
         
         if _has_appium:
-            logger.info("Detected AppiumLibrary - using DeviceConnector")
+            logger.info("Fallback: AppiumLibrary installed - using DeviceConnector")
             return DeviceConnector()
         
         logger.warn("No platform library detected, defaulting to DeviceConnector")

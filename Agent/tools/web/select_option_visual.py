@@ -82,7 +82,8 @@ class SelectOptionVisualTool(BaseTool):
         executor.run_keyword("Mouse Button", "click", x_center, y_center)
         
         # Wait for dropdown to open
-        executor.run_keyword("Sleep", "0.5s")
+        if hasattr(executor.platform, 'wait_for_page_stable'):
+            executor.platform.wait_for_page_stable()
         
         # Step 2: Capture new screenshot and find option
         screenshot_base64_2 = executor.platform.get_screenshot_base64()
