@@ -1,6 +1,6 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from Agent.platforms import DeviceConnector, WebConnectorRF, create_platform
+from Agent.platforms import DeviceConnector, create_platform
 from Agent.ai.llm.facade import UnifiedLLMFacade
 from Agent.ai._promptcomposer import AgentPromptComposer
 from Agent.utilities.imguploader.imghandler import ImageUploader
@@ -8,90 +8,56 @@ from Agent.tools.registry import ToolRegistry
 from Agent.tools.base import ToolCategory
 from Agent.core.keyword_runner import KeywordRunner
 from Agent.tools.mobile import MOBILE_TOOLS
-from Agent.tools.web import WEB_TOOLS
 from Agent.tools.visual import VISUAL_TOOLS
 from robot.api import logger
 
 
 class AgentEngine:
-    """Core engine for AI-driven test automation.
-    
-    Orchestrates the complete Agent.Do and Agent.VisualCheck flows:
-    - Capturing UI context and screenshots
-    - Composing AI prompts and calling LLMs
-    - Tool-based action execution and visual verification
-    
-    This is the main orchestrator that coordinates platform connectors,
-    AI services, tool registry, and executors.
-    """
+    """Core engine for AI-driven Android test automation."""
 
     def __init__(
         self, 
         llm_client: str = "openai", 
         llm_model: str = "gpt-4o-mini",
-        platform: Optional[Union[DeviceConnector, WebConnectorRF]] = None,
+        platform: Optional[DeviceConnector] = None,
         platform_type: str = "auto",
-        element_source: str = "dom",
+        element_source: str = "accessibility",
         llm_input_format: str = "text",
     ) -> None:
-        # Platform connector - create or use provided
         if platform is None:
             self.platform = create_platform(platform_type)
         else:
             self.platform = platform
         
-        # Detect platform type from class (no driver access needed)
-        self._is_web = isinstance(self.platform, WebConnectorRF)
-        platform_name = "web" if self._is_web else "mobile"
-        logger.info(f"🌐 Platform: {platform_name}")
+        logger.info("📱 Platform: mobile")
         
-        # AI components
         self.llm = UnifiedLLMFacade(provider=llm_client, model=llm_model)
         self.image_uploader = ImageUploader(service="auto")
         
-        # Tool execution components
         self.tool_registry = ToolRegistry()
         self.executor = KeywordRunner(self.platform)
         
-        # Register tools based on platform
-        if self._is_web:
-            self._register_web_tools()
-        else:
-            self._register_mobile_tools()
+        self._register_mobile_tools()
         self._register_visual_tools()
         
-        # Create prompt composer with registry (after tools are registered)
         self.prompt_composer = AgentPromptComposer(
             tool_registry=self.tool_registry,
             platform_connector=self.platform
         )
         
-        # Element source and LLM input format
         self.element_source = element_source
         self.llm_input_format = llm_input_format
         logger.info(f"🎯 Element source: {element_source}, LLM input format: {llm_input_format}")
     
     def _register_mobile_tools(self) -> None:
-        """Register all mobile tools in the registry."""
         for ToolClass in MOBILE_TOOLS:
             self.tool_registry.register(ToolClass())
-        
         mobile_tools_count = len(self.tool_registry.get_by_category(ToolCategory.MOBILE))
         logger.debug(f"📱 Registered {mobile_tools_count} mobile tools")
     
-    def _register_web_tools(self) -> None:
-        """Register all web tools in the registry."""
-        for ToolClass in WEB_TOOLS:
-            self.tool_registry.register(ToolClass())
-        
-        web_tools_count = len(self.tool_registry.get_by_category(ToolCategory.WEB))
-        logger.debug(f"🌐 Registered {web_tools_count} web tools")
-    
     def _register_visual_tools(self) -> None:
-        """Register all visual verification tools in the registry."""
         for ToolClass in VISUAL_TOOLS:
             self.tool_registry.register(ToolClass())
-        
         visual_tools_count = len(self.tool_registry.get_by_category(ToolCategory.VISUAL))
         logger.debug(f"👁️ Registered {visual_tools_count} visual tools")
     
@@ -101,10 +67,10 @@ class AgentEngine:
         """Change element source dynamically.
         
         Args:
-            source: 'dom' or 'visual'
+            source: 'accessibility' or 'vision'
         """
-        if source not in ["dom", "visual"]:
-            raise ValueError(f"Invalid element_source: {source}. Choose: dom, visual")
+        if source not in ["accessibility", "vision"]:
+            raise ValueError(f"Invalid element_source: {source}. Choose: accessibility, vision")
         
         self.element_source = source
         logger.info(f"🔧 Element source changed to: {source}")
@@ -137,10 +103,10 @@ class AgentEngine:
         annotated_image_path = None
         
         # Collect UI elements based on element source
-        if self.element_source == "dom":
+        if self.element_source == "accessibility":
             ui_candidates = self.platform.collect_ui_candidates()
-            logger.debug(f"📋 Collected {len(ui_candidates)} DOM elements")
-        elif self.element_source == "visual":
+            logger.debug(f"📋 Collected {len(ui_candidates)} accessibility elements")
+        elif self.element_source == "vision":
             screenshot_base64 = self.platform.get_screenshot_base64()
             from Agent.ai.vlm._client import OmniParserClient
             from Agent.ai.vlm._parser import OmniParserResultProcessor
@@ -155,7 +121,7 @@ class AgentEngine:
                     response_text=parsed_text,
                     image_temp_path=image_temp_path,
                 )
-                elements_data = processor.get_parsed_ui_elements(element_type="interactive")
+                elements_data = processor.get_parsed_ui_elements(element_type="all")
                 
                 with Image.open(image_temp_path) as img:
                     width, height = img.size
@@ -197,9 +163,11 @@ class AgentEngine:
         if screenshot_base64:
             context["screenshot_base64"] = screenshot_base64
         
+        logger.info(f"Elements sent to AI: {ui_candidates} elements")
+        
         # Prepare AI request
         platform_name = self.platform.get_platform()
-        tool_category = "web" if self._is_web else "mobile"
+        tool_category = "mobile"
         messages = self.prompt_composer.compose_do_messages(
             instruction=instruction,
             ui_elements=ui_candidates,
@@ -209,6 +177,9 @@ class AgentEngine:
             screenshot_base64=screenshot_base64,
             annotated_image_path=annotated_image_path,
         )
+        if annotated_image_path:
+            logger.info(f"Annotated image: {annotated_image_path}")
+        
         tools = self.prompt_composer.get_do_tools(category=tool_category, element_source=self.element_source)
         logger.debug(f"Tools for {tool_category}: {len(tools)} tools")
         
@@ -222,12 +193,15 @@ class AgentEngine:
             tool_choice="required",
             temperature=0
         )
-
-        logger.debug(f"AI response: {result}")
+        
+        tool_call = result.get("tool_calls", [{}])[0]
+        tool_name = tool_call.get("function", {}).get("name", "unknown")
+        tool_args = tool_call.get("function", {}).get("arguments", {})
+        logger.info(f"🤖 AI chose: {tool_name}({tool_args})")
         
         # Execute tool
         self._execute_do_from_tool_calls(result, context, instruction)
-        logger.info("✅ Agent.Do completed")
+        logger.info("Agent.Do completed")
 
     def visual_check(self, instruction: str) -> None:
         """Execute visual verification based on natural language instruction.
@@ -320,7 +294,7 @@ class AgentEngine:
         result = orchestrator.find_element(
             element_description=description,
             image_base64=screenshot_base64,
-            element_type="interactive"
+            element_type="all"
         )
         
         if not result:

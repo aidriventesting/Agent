@@ -26,8 +26,8 @@ class AgentKeywords:
         llm_client: str | None = None, 
         llm_model: str | None = None,
         platform_type: str = "auto",
-        element_source: str = "dom",
-        llm_input_format: str = "text",
+        element_source: str = "accessibility",
+        llm_input_format: str = "som",
     ):
         from Agent.config.config import Config
         
@@ -67,22 +67,22 @@ class AgentKeywords:
         return self.engine.find_visual_element(description, format=format)
 
     def set_element_source(self, source: str):
-        """Agent.Set Element Source    dom|visual
-        Example: Agent.Set Element Source    visual
+        """Agent.Set Element Source    accessibility|vision
+        Example: Agent.Set Element Source    vision
         """
         self.engine.set_element_source(source)
 
-    def set_llm_input_format(self, format: str):
-        """Agent.Set LLM Input Format    text|som
-        Example: Agent.Set LLM Input Format    som
-        """
-        self.engine.set_llm_input_format(format)
+    # def set_llm_input_format(self, format: str):
+    #     """Agent.Set LLM Input Format    text|som
+    #     Example: Agent.Set LLM Input Format    som
+    #     """
+    #     self.engine.set_llm_input_format(format)
 
-    def autonumous(self, instruction: str):
-        """Agent.Autonumous <instruction>
-        This keyword is designed to autonomously plan and execute a test based on the 
-        given single instruction.
+    # def autonumous(self, instruction: str):
+    #     """Agent.Autonumous <instruction>
+    #     This keyword is designed to autonomously plan and execute a test based on the 
+    #     given single instruction.
 
-        Example: Agent.Autonumous    Navigate to settings, change language to French, 
-        ...    then go back to home screen and verify the interface is in French"""
-        raise NotImplementedError("Agent.Autonumous is not implemented yet")
+    #     Example: Agent.Autonumous    Navigate to settings, change language to French, 
+    #     ...    then go back to home screen and verify the interface is in French"""
+    #     raise NotImplementedError("Agent.Autonumous is not implemented yet")

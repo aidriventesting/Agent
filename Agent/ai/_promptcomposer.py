@@ -17,16 +17,18 @@ class AgentPromptComposer:
     ) -> None:
         self.registry = tool_registry or ToolRegistry()
         self.platform = platform_connector
-        self._setup_log_dir()
+        self._annotated_dir = None
     
-    def _setup_log_dir(self) -> None:
-        self.annotated_dir = os.path.join(os.getcwd(), "browser", "annotated")
-        os.makedirs(self.annotated_dir, exist_ok=True)
+    def _get_annotated_dir(self) -> str:
+        if self._annotated_dir is None:
+            from Agent.utilities._logdir import get_artifacts_subdir
+            self._annotated_dir = get_artifacts_subdir("agent/annotated")
+        return self._annotated_dir
     
     def _save_annotated_image(self, image_base64: str, source: str = "som") -> str:
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S_%f")[:-3]
         filename = f"annotated_{source}_{timestamp}.png"
-        filepath = os.path.join(self.annotated_dir, filename)
+        filepath = os.path.join(self._get_annotated_dir(), filename)
         
         image_bytes = base64.b64decode(image_base64)
         with open(filepath, "wb") as f:
@@ -40,7 +42,7 @@ class AgentPromptComposer:
         instruction: str,
         ui_elements: Optional[List[Dict[str, Any]]] = None,
         platform: str = "mobile",
-        element_source: str = "dom",
+        element_source: str = "accessibility",
         llm_input_format: str = "text",
         screenshot_base64: Optional[str] = None,
         annotated_image_path: Optional[str] = None,
@@ -49,12 +51,12 @@ class AgentPromptComposer:
         
         Args:
             instruction: User instruction
-            ui_elements: List of UI elements (from DOM or OmniParser)
-            platform: 'mobile' or 'web' - determines system prompt
-            element_source: 'dom' or 'visual' - where elements come from
-            llm_input_format: 'text' or 'som' - how to send elements to LLM
-            screenshot_base64: Screenshot (required for DOM + SoM)
-            annotated_image_path: Pre-annotated image from OmniParser (for Visual + SoM)
+            ui_elements: List of UI elements
+            platform: 'android' or 'ios'
+            element_source: 'accessibility' or 'vision'
+            llm_input_format: 'text' or 'som'
+            screenshot_base64: Screenshot (required for SoM mode)
+            annotated_image_path: Pre-annotated image from OmniParser
         """
         # Base system prompt
         is_mobile = platform in ("android", "ios")
@@ -64,11 +66,12 @@ class AgentPromptComposer:
                 "Your job: analyze the instruction and call the appropriate function to interact with the mobile UI.\n"
             )
             
-            if element_source == "visual":
+            if element_source == "vision":
                 system_content += (
-                    "\nUSE VISUAL TOOLS:\n"
-                    "- click_visual_element(description): Click element by visual description\n"
-                    "- Elements were detected using computer vision (OmniParser)\n"
+                    "\nELEMENTS DETECTED VIA COMPUTER VISION (OmniParser):\n"
+                    "- tap_element(element_index): Click element by INDEX from numbered list\n"
+                    "- input_text(element_index, text): Type text into element by INDEX\n"
+                    "- The screenshot shows NUMBERED bounding boxes - use those numbers!\n"
                 )
             else:
                 system_content += (
@@ -87,7 +90,7 @@ class AgentPromptComposer:
                 "Your job: analyze the instruction and call the appropriate function to interact with the web page.\n"
             )
             
-            if element_source == "visual":
+            if element_source == "vision":
                 system_content += (
                     "\nUSE VISUAL TOOLS:\n"
                     "- click_visual_element(description): Click by visual description\n"
@@ -116,14 +119,23 @@ class AgentPromptComposer:
         ui_label = "Mobile UI Elements" if is_mobile else "Web Elements"
         
         if llm_input_format == "som" and ui_elements:
-            source_info = "detected via computer vision" if element_source == "visual" else "from DOM/accessibility tree"
+            source_info = "detected via computer vision" if element_source == "vision" else "from accessibility tree"
             
             legend_lines = []
             for idx, elem in enumerate(ui_elements, start=1):
                 text = elem.get("text", "").replace("\n", " ").strip()[:40]
                 tag = elem.get("class_name", "")
-                desc = text if text else (elem.get("aria_label") or elem.get("placeholder") or "")
-                legend_lines.append(f"[{idx}] <{tag}> {desc}".strip())
+                short_tag = tag.split('.')[-1] if '.' in tag else tag
+                desc = text if text else (elem.get("aria_label") or elem.get("content_desc") or elem.get("placeholder") or "")
+                bbox = elem.get("bbox", {})
+                pos_info = ""
+                if bbox:
+                    y = bbox.get("y", 0)
+                    x = bbox.get("x", 0)
+                    pos = "top" if y < 400 else "mid" if y < 1200 else "bot"
+                    side = "L" if x < 300 else "C" if x < 700 else "R"
+                    pos_info = f" @{pos}-{side}"
+                legend_lines.append(f"[{idx}] {short_tag}: {desc}{pos_info}".strip())
             legend_text = "\n".join(legend_lines)
             
             text_content = (
@@ -159,7 +171,7 @@ class AgentPromptComposer:
             else:
                 ui_text = "(no UI elements found)"
             
-            source_info = " (detected via OmniParser)" if element_source == "visual" else ""
+            source_info = " (detected via OmniParser)" if element_source == "vision" else ""
             user_content = f"Instruction: {instruction}\n\n{ui_label}{source_info}:\n{ui_text}"
         
         return [
@@ -170,15 +182,13 @@ class AgentPromptComposer:
     def get_do_tools(
         self, 
         category: str = "mobile",
-        element_source: str = "dom"
+        element_source: str = "accessibility"
     ) -> List[Dict[str, Any]]:
         """Return tool definitions for DO actions from the registry.
         
-        Returns tool specs in standard format (works with OpenAI, Anthropic, Gemini, etc.)
-        
         Args:
-            category: Tool category to retrieve ('mobile', 'web', or None for all)
-            element_source: 'dom' or 'visual' - filters tools based on capabilities
+            category: Tool category ('mobile')
+            element_source: 'accessibility' or 'vision'
         """
         filtered_tools = self.registry.get_tools_for_source(category, element_source)
         return [tool.to_tool_spec() for tool in filtered_tools]
