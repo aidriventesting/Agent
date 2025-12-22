@@ -1,11 +1,25 @@
 from typing import Any, Dict, List, Optional
 import json
+import copy
 
 from robot.api import logger
 from Agent.utilities._jsonutils import extract_json_safely
 from Agent.ai.llm._factory import LLMClientFactory
 from Agent.ai.llm._openaiclient import OpenAIClient
-from Agent.ai.llm._ollama import OllamaClient
+
+
+def _sanitize_for_log(messages: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    """Remove base64 images from messages for readable logging."""
+    sanitized = copy.deepcopy(messages)
+    for msg in sanitized:
+        content = msg.get("content")
+        if isinstance(content, list):
+            for item in content:
+                if isinstance(item, dict) and item.get("type") == "image_url":
+                    url = item.get("image_url", {}).get("url", "")
+                    if url.startswith("data:image"):
+                        item["image_url"]["url"] = "[BASE64_IMAGE]"
+    return sanitized
 
 
 class UnifiedLLMFacade:
@@ -43,10 +57,10 @@ class UnifiedLLMFacade:
     ) -> Dict[str, Any]:
         """Sends a request to the AI model and returns a parsed JSON response."""
         logger.debug("🚀 Sending request to AI model...")
-        logger.debug(f"📝 Prompt: {json.dumps(messages, indent=2)}")
+        logger.debug(f"📝 Prompt: {json.dumps(_sanitize_for_log(messages), indent=2)}")
         
-        # Only OpenAI and Ollama support response_format parameter
-        if isinstance(self._client, (OpenAIClient, OllamaClient)):
+        # Only OpenAI supports response_format parameter
+        if isinstance(self._client, OpenAIClient):
             kwargs["response_format"] = {"type": "json_object"}
         
         response = self._client.create_chat_completion(
@@ -72,7 +86,7 @@ class UnifiedLLMFacade:
     ) -> Dict[str, Any]:
         """Sends a request to the AI model with tool calling enabled."""
         logger.debug("🚀 Sending request to AI model with tools...")
-        logger.debug(f"📝 Prompt: {json.dumps(messages, indent=2)}")
+        logger.debug(f"📝 Prompt: {json.dumps(_sanitize_for_log(messages), indent=2)}")
         logger.debug(f"   Tools: {[t['function']['name'] for t in tools]}")
         
         response = self._client.create_chat_completion(
