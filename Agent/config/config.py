@@ -20,7 +20,6 @@ class Config:
     OPENAI_API_KEY = os.getenv("OPENAI_API_KEY", "")
     ANTHROPIC_API_KEY = os.getenv("ANTHROPIC_API_KEY", "")
     GEMINI_API_KEY = os.getenv("GEMINI_API_KEY", "")
-    DEEPSEEK_API_KEY = os.getenv("DEEPSEEK_API_KEY", "")
     HUGGINGFACE_API_KEY = os.getenv("HUGGINGFACE_API_KEY", "")
 
     # OmniParser (Hugging Face space)
@@ -35,11 +34,6 @@ class Config:
     DEFAULT_OPENAI_MODEL = os.getenv("DEFAULT_OPENAI_MODEL") or _model_config.get_provider_default_model("openai")
     DEFAULT_ANTHROPIC_MODEL = os.getenv("DEFAULT_ANTHROPIC_MODEL") or _model_config.get_provider_default_model("anthropic")
     DEFAULT_GEMINI_MODEL = os.getenv("DEFAULT_GEMINI_MODEL") or _model_config.get_provider_default_model("gemini")
-    DEFAULT_DEEPSEEK_MODEL = os.getenv("DEFAULT_DEEPSEEK_MODEL") or _model_config.get_provider_default_model("deepseek")
-    DEFAULT_OLLAMA_MODEL = os.getenv("DEFAULT_OLLAMA_MODEL") or _model_config.get_provider_default_model("ollama")
-
-    # Ollama (local)
-    OLLAMA_BASE_URL = os.getenv("OLLAMA_BASE_URL", "http://localhost:11434/v1")
 
     # Image Upload
     IMGBB_API_KEY = os.getenv("IMGBB_API_KEY", "")
