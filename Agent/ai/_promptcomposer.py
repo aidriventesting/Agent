@@ -21,8 +21,8 @@ class AgentPromptComposer:
     
     def _get_annotated_dir(self) -> str:
         if self._annotated_dir is None:
-            from Agent.utilities._logdir import get_artifacts_subdir
-            self._annotated_dir = get_artifacts_subdir("agent/annotated")
+            from Agent.utilities._logdir import set_artifacts_subdir
+            self._annotated_dir = set_artifacts_subdir("RF_Agent/Annotated")
         return self._annotated_dir
     
     def _save_annotated_image(self, image_base64: str, source: str = "som") -> str:
@@ -140,9 +140,9 @@ class AgentPromptComposer:
             
             text_content = (
                 f"Instruction: {instruction}\n\n"
-                f"The screenshot shows numbered boxes on {ui_label.lower()} ({source_info}).\n"
-                f"Use the element NUMBER from this list:\n{legend_text}\n\n"
-                f"Select by NUMBER matching the instruction."
+                f"ANNOTATED SCREENSHOT: Each UI element has a GREEN BOX with its ID NUMBER in a small rectangle at the top-left.\n"
+                f"ELEMENT LIST ({source_info}):\n{legend_text}\n\n"
+                f"IMPORTANT: Select the element by its ID NUMBER that best matches the instruction."
             )
             
             # Use pre-annotated image from OmniParser if available (Visual + SoM)

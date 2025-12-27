@@ -23,7 +23,7 @@ def get_artifacts_root_path() -> Path:
     artifacts_folder = get_artifacts_folder_name()
     return Path(exec_dir) / artifacts_folder
 
-def get_artifacts_subdir(ArtifactsName) -> Path:
+def set_artifacts_subdir(ArtifactsName) -> Path:
     """Returns full path to a subdir in artifacts root (creates if missing)."""
     artifacts_dir = get_artifacts_root_path() / ArtifactsName
     artifacts_dir.mkdir(parents=True, exist_ok=True)

@@ -254,6 +254,10 @@ class AgentEngine:
         """
         import json
         logger.info(f"❓ Agent.Ask: '{question}'")
+        
+        if hasattr(self.platform, 'wait_for_page_stable'):
+            self.platform.wait_for_page_stable()
+        
         screenshot_base64 = self.platform.get_screenshot_base64()
         self.platform.embed_image_to_log(screenshot_base64)
         
@@ -283,6 +287,10 @@ class AgentEngine:
         from Agent.ai.vlm.interface import OmniParserOrchestrator
         
         logger.info(f"🔍 Agent.Find Visual Element: '{description}'")
+        
+        if hasattr(self.platform, 'wait_for_page_stable'):
+            self.platform.wait_for_page_stable()
+        
         screenshot_base64 = self.platform.get_screenshot_base64()
         self.platform.embed_image_to_log(screenshot_base64)
         

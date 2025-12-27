@@ -135,7 +135,7 @@ class OpenAIClient(BaseLLMClient):
             result["tool_calls"] = tool_calls
 
         if include_tokens:
-            logger.info(f"Tokens used: {response.usage}")
+            logger.debug(f"Tokens used: {response.usage}")
             result.update(
                 {
                     "prompt_tokens": response.usage.prompt_tokens,

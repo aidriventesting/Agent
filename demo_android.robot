@@ -2,7 +2,7 @@
 Documentation    Demo: AI-driven Android test with Robot Framework Agent
 ...              Standalone file - just update the variables below and run
 Library    AppiumLibrary
-Library    Agent    llm_client=openai    llm_model=gpt-4o    platform_type=mobile    element_source=accessibility
+Library    Agent    llm_client=openai    llm_model=gpt-4.1    platform_type=mobile    element_source=accessibility
 
 
 *** Variables ***
@@ -26,18 +26,15 @@ Demo Youtube
 
     Agent.check    instruction=Verify that YouTube watch history is turned off
 
-    Agent.Do    instruction=Tap the search icon at the top
+    Agent.Do       instruction=Tap the search icon at the top
 
-    Agent.Do    instruction=Enter "Robot Framework" into the search input box
+    Agent.Do       instruction=Enter "Robot Framework" into the search input box
 
     Agent.check    instruction=Confirm every result displayed includes "Robot Framework" in its title or description
 
-    Agent.Do    instruction=Tap the first search result item
+    Agent.Do       instruction=Click on the first search result appearing in the search results list
 
-    Agent.Ask    question=What is the current subscriber count of the Robot Framework YouTube channel?
-
-    Agent.Do    instruction=Play the first actual video in the search results, ignoring any advertisements
-
+    Agent.Ask      question=How many subscribers does the Robot Framework channel have?
 
 
 
