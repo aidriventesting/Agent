@@ -44,6 +44,7 @@ def render_som(
     draw = ImageDraw.Draw(overlay)
     
     try:
+        #TODO: fix this for windows and linux ( pixelized font on those OS )
         font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 14)
         font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 24)
     except:
