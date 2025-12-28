@@ -86,7 +86,24 @@ Repository = "https://github.com/aidriventesting/agent"
 Issues = "https://github.com/aidriventesting/agent/issues"
 
 [tool.setuptools]
-packages = ["Agent", "Agent.ai", "Agent.ai.llm", "Agent.ai.vlm", "Agent.config", "Agent.platforms", "Agent.utilities", "Agent.utilities.imguploader"]
+packages = [
+    "Agent",
+    "Agent.ai",
+    "Agent.ai.llm",
+    "Agent.ai.vlm",
+    "Agent.ai.prompts",
+    "Agent.config",
+    "Agent.core",
+    "Agent.platforms",
+    "Agent.platforms.collectors",
+    "Agent.platforms.locators",
+    "Agent.tools",
+    "Agent.tools.mobile",
+    "Agent.tools.visual",
+    "Agent.tools.web",
+    "Agent.utilities",
+    "Agent.utilities.imguploader",
+]
 
 [tool.setuptools.package-data]
 Agent = ["config/*.json"]
