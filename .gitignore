@@ -11,6 +11,11 @@ venv/
 ENV/
 env.bak/
 venv.bak/
+*env/
+*_env/
+env_*/
+test_env/
+env_test/
 
 # Distribution / packaging
 .Python
@@ -60,19 +65,35 @@ pabot_results/
 results/
 log/
 logs/
+RF_Agent/
+browser/
+Reports/
+log_*.html
+# Playwright
+playwright-log.txt
+playwright-*.txt
+traces/
 
-env2/
 # IDEs
 .vscode/
 .idea/
 *.swp
 *.swo
 *~
+.cursorrules
+.cursor/
+
+# macOS
 .DS_Store
+**/.DS_Store
 
 # Environment variables
 .env
 .env.local
+
+# PyPI 
+.pypirc
+*.pypirc
 
 # BrowserStack
 browserstack.yml
