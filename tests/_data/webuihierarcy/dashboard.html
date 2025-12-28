@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Dashboard - c0 Baseline</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <div class="app-container">
+    <aside class="sidebar" role="navigation" aria-label="Main navigation">
+      <div class="sidebar-header">
+        <h1 class="app-logo">MailBox</h1>
+      </div>
+      <nav class="sidebar-nav" aria-label="Email folders">
+        <a href="#" class="nav-item active" aria-current="page">
+          <span class="nav-icon icon-inbox" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="22 12 16 12 14 15 10 15 8 12 2 12"></polyline>
+              <path d="M5.45 5.11L2 12v6a2 2 0 0 0 2 2h16a2 2 0 0 0 2-2v-6l-3.45-6.89A2 2 0 0 0 16.76 4H7.24a2 2 0 0 0-1.79 1.11z"></path>
+            </svg>
+          </span>
+          <span class="nav-label">Inbox</span>
+          <span class="nav-badge" aria-label="24 unread emails">24</span>
+        </a>
+        <a href="#" class="nav-item" aria-label="Starred emails">
+          <span class="nav-icon icon-starred" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </span>
+          <span class="nav-label">Starred</span>
+        </a>
+        <a href="#" class="nav-item" aria-label="Sent emails">
+          <span class="nav-icon icon-sent" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <line x1="22" y1="2" x2="11" y2="13"></line>
+              <polygon points="22 2 15 22 11 13 2 9 22 2"></polygon>
+            </svg>
+          </span>
+          <span class="nav-label">Sent</span>
+        </a>
+        <a href="#" class="nav-item" aria-label="Drafts, 3 drafts">
+          <span class="nav-icon icon-drafts" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <path d="M14 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8z"></path>
+              <polyline points="14 2 14 8 20 8"></polyline>
+              <line x1="16" y1="13" x2="8" y2="13"></line>
+              <line x1="16" y1="17" x2="8" y2="17"></line>
+            </svg>
+          </span>
+          <span class="nav-label">Drafts</span>
+          <span class="nav-badge" aria-label="3 drafts">3</span>
+        </a>
+        <a href="#" class="nav-item" aria-label="Trash">
+          <span class="nav-icon icon-trash" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </span>
+          <span class="nav-label">Trash</span>
+        </a>
+      </nav>
+      <div class="sidebar-footer">
+        <button class="btn-compose" aria-label="Compose new email">
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+            <line x1="12" y1="5" x2="12" y2="19"></line>
+            <line x1="5" y1="12" x2="19" y2="12"></line>
+          </svg>
+          Compose
+        </button>
+      </div>
+    </aside>
+
+    <main class="main-content" role="main" aria-labelledby="inbox-title">
+      <header class="main-header" role="banner">
+        <form class="search-container" role="search" aria-label="Search emails">
+          <span class="search-icon" aria-hidden="true">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+              <circle cx="11" cy="11" r="8"></circle>
+              <path d="M21 21l-4.35-4.35"></path>
+            </svg>
+          </span>
+          <label for="email-search" class="visually-hidden">Search emails</label>
+          <input type="text" id="email-search" class="search-input" placeholder="Search emails...">
+        </form>
+        <div class="header-actions">
+          <button class="btn-icon icon-refresh" aria-label="Refresh inbox" title="Refresh">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="23 4 23 10 17 10"></polyline>
+              <polyline points="1 20 1 14 7 14"></polyline>
+              <path d="M3.51 9a9 9 0 0 1 14.85-3.36L23 10M1 14l4.64 4.36A9 9 0 0 0 20.49 15"></path>
+            </svg>
+          </button>
+          <button class="btn-icon icon-settings" aria-label="Settings" title="Settings">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <circle cx="12" cy="12" r="3"></circle>
+              <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"></path>
+            </svg>
+          </button>
+          <button class="btn-icon icon-notifications" aria-label="Notifications, you have new notifications" title="Notifications">
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M18 8A6 6 0 0 0 6 8c0 7-3 9-3 9h18s-3-2-3-9"></path>
+              <path d="M13.73 21a2 2 0 0 1-3.46 0"></path>
+            </svg>
+            <span class="notification-dot" aria-hidden="true"></span>
+          </button>
+          <div class="user-avatar">
+            <img src="https://placehold.co/32x32/6366f1/fff?text=JD" alt="John Doe's profile picture">
+          </div>
+        </div>
+      </header>
+
+      <div class="email-toolbar" role="toolbar" aria-label="Email actions">
+        <div class="toolbar-left">
+          <label class="checkbox-container">
+            <input type="checkbox" class="select-all-checkbox" aria-label="Select all emails">
+            <span class="checkmark"></span>
+          </label>
+          <button class="btn-toolbar btn-archive" aria-label="Archive selected emails" title="Archive">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="21 8 21 21 3 21 3 8"></polyline>
+              <rect x="1" y="3" width="22" height="5"></rect>
+              <line x1="10" y1="12" x2="14" y2="12"></line>
+            </svg>
+          </button>
+          <button class="btn-toolbar btn-delete" aria-label="Delete selected emails" title="Delete">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="3 6 5 6 21 6"></polyline>
+              <path d="M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"></path>
+            </svg>
+          </button>
+          <button class="btn-toolbar btn-mark-read" aria-label="Mark selected as read" title="Mark as read">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <path d="M4 4h16c1.1 0 2 .9 2 2v12c0 1.1-.9 2-2 2H4c-1.1 0-2-.9-2-2V6c0-1.1.9-2 2-2z"></path>
+              <polyline points="22,6 12,13 2,6"></polyline>
+            </svg>
+          </button>
+        </div>
+        <div class="toolbar-right">
+          <span class="email-count" aria-live="polite">1-24 of 128</span>
+          <button class="btn-toolbar btn-prev" aria-label="Previous page" title="Previous">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="15 18 9 12 15 6"></polyline>
+            </svg>
+          </button>
+          <button class="btn-toolbar btn-next" aria-label="Next page" title="Next">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polyline points="9 18 15 12 9 6"></polyline>
+            </svg>
+          </button>
+        </div>
+      </div>
+
+      <h2 id="inbox-title" class="visually-hidden">Inbox</h2>
+      <div class="email-list" role="list" aria-label="Email messages">
+        <article class="email-item unread" role="listitem" aria-label="Unread email from Sarah Johnson">
+          <label class="checkbox-container">
+            <input type="checkbox" class="email-checkbox" aria-label="Select email from Sarah Johnson">
+            <span class="checkmark"></span>
+          </label>
+          <button class="btn-star starred" aria-label="Starred, click to unstar" aria-pressed="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+          <div class="email-sender">Sarah Johnson</div>
+          <div class="email-content">
+            <span class="email-subject">Quarterly Report Review</span>
+            <span class="email-preview"> - Hi team, Please find attached the Q4 quarterly report for your review. Let me know if you have any questions...</span>
+          </div>
+          <div class="email-meta">
+            <span class="email-attachment" aria-label="Has attachment">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+              </svg>
+            </span>
+            <time class="email-time" datetime="2024-12-04T10:42">10:42 AM</time>
+          </div>
+        </article>
+
+        <article class="email-item unread" role="listitem" aria-label="Unread email from Tech Updates">
+          <label class="checkbox-container">
+            <input type="checkbox" class="email-checkbox" aria-label="Select email from Tech Updates">
+            <span class="checkmark"></span>
+          </label>
+          <button class="btn-star" aria-label="Not starred, click to star" aria-pressed="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+          <div class="email-sender">Tech Updates</div>
+          <div class="email-content">
+            <span class="email-subject">New Feature Announcement</span>
+            <span class="email-preview"> - We're excited to announce our latest feature release! Check out what's new in version 2.5...</span>
+          </div>
+          <div class="email-meta">
+            <time class="email-time" datetime="2024-12-04T09:15">9:15 AM</time>
+          </div>
+        </article>
+
+        <article class="email-item" role="listitem" aria-label="Email from Michael Chen">
+          <label class="checkbox-container">
+            <input type="checkbox" class="email-checkbox" aria-label="Select email from Michael Chen">
+            <span class="checkmark"></span>
+          </label>
+          <button class="btn-star" aria-label="Not starred, click to star" aria-pressed="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+          <div class="email-sender">Michael Chen</div>
+          <div class="email-content">
+            <span class="email-subject">Meeting Notes - Project Alpha</span>
+            <span class="email-preview"> - Here are the notes from our meeting yesterday. Action items are highlighted at the bottom...</span>
+          </div>
+          <div class="email-meta">
+            <span class="email-attachment" aria-label="Has attachment">
+              <svg width="14" height="14" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+                <path d="M21.44 11.05l-9.19 9.19a6 6 0 0 1-8.49-8.49l9.19-9.19a4 4 0 0 1 5.66 5.66l-9.2 9.19a2 2 0 0 1-2.83-2.83l8.49-8.48"></path>
+              </svg>
+            </span>
+            <time class="email-time" datetime="2024-12-03">Yesterday</time>
+          </div>
+        </article>
+
+        <article class="email-item" role="listitem" aria-label="Email from HR Department">
+          <label class="checkbox-container">
+            <input type="checkbox" class="email-checkbox" aria-label="Select email from HR Department">
+            <span class="checkmark"></span>
+          </label>
+          <button class="btn-star starred" aria-label="Starred, click to unstar" aria-pressed="true">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="currentColor" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+          <div class="email-sender">HR Department</div>
+          <div class="email-content">
+            <span class="email-subject">Holiday Schedule 2025</span>
+            <span class="email-preview"> - Please find the official holiday schedule for 2025. Mark your calendars accordingly...</span>
+          </div>
+          <div class="email-meta">
+            <time class="email-time" datetime="2024-12-02">Dec 2</time>
+          </div>
+        </article>
+
+        <article class="email-item" role="listitem" aria-label="Email from Emily Rodriguez">
+          <label class="checkbox-container">
+            <input type="checkbox" class="email-checkbox" aria-label="Select email from Emily Rodriguez">
+            <span class="checkmark"></span>
+          </label>
+          <button class="btn-star" aria-label="Not starred, click to star" aria-pressed="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+          <div class="email-sender">Emily Rodriguez</div>
+          <div class="email-content">
+            <span class="email-subject">Design Review Feedback</span>
+            <span class="email-preview"> - Great work on the latest designs! I have a few suggestions that might help improve the user flow...</span>
+          </div>
+          <div class="email-meta">
+            <time class="email-time" datetime="2024-12-01">Dec 1</time>
+          </div>
+        </article>
+
+        <article class="email-item" role="listitem" aria-label="Email from Support Team">
+          <label class="checkbox-container">
+            <input type="checkbox" class="email-checkbox" aria-label="Select email from Support Team">
+            <span class="checkmark"></span>
+          </label>
+          <button class="btn-star" aria-label="Not starred, click to star" aria-pressed="false">
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" aria-hidden="true">
+              <polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"></polygon>
+            </svg>
+          </button>
+          <div class="email-sender">Support Team</div>
+          <div class="email-content">
+            <span class="email-subject">Your ticket has been resolved</span>
+            <span class="email-preview"> - Ticket #4521 has been marked as resolved. If you're still experiencing issues, please reply to reopen...</span>
+          </div>
+          <div class="email-meta">
+            <time class="email-time" datetime="2024-11-30">Nov 30</time>
+          </div>
+        </article>
+      </div>
+    </main>
+  </div>
+</body>
+</html>
+
