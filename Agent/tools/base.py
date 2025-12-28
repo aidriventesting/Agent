@@ -51,29 +51,28 @@ class BaseTool(ABC):
         return False
     
     @property
-    def works_on_visual(self) -> bool:
-        """Can this tool work with visual detection (coordinates)?
+    def works_on_coordinates(self) -> bool:
+        """Can this tool work with coordinates (x, y)?
         
         Returns:
-            True: Tool can accept visual coordinates (e.g., click, tap)
-            False: Tool cannot work with coordinates alone
+            True: Tool can use coordinates from bounding box
+            False: Tool cannot work with coordinates
         
         Default: False (only action tools need to override)
         """
         return False
     
     @property
-    def has_visual_equivalent(self) -> bool:
-        """Does this tool have a visual equivalent?
+    def has_coordinates_alternative(self) -> bool:
+        """Does this tool have a coordinates-based alternative?
         
         Returns:
-            True: This tool has a visual-based alternative (e.g., tap_element → click_visual_element)
-            False: This tool has no visual equivalent
+            True: This tool has a coordinates-based alternative
+            False: This tool has no coordinates alternative
         
-        Default: False (only tools with visual equivalents need to override)
+        Default: False
         
-        Used for filtering in visual mode: exclude tools with visual equivalents,
-        keep tools without equivalents (even if they only work on locators).
+        Used for filtering in coordinates mode.
         """
         return False
     

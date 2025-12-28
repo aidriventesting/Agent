@@ -86,3 +86,7 @@ class DeviceConnector:
     def embed_image_to_log(self, base64_screenshot: str, width: int = 400) -> None:
         msg = f"</td></tr><tr><td colspan=\"3\"><img src=\"data:image/png;base64, {base64_screenshot}\" width=\"{width}\"></td></tr>"
         logger.info(msg, html=True, also_console=False)
+
+    def wait_for_page_stable(self, delay: float = 1.0) -> None:
+        import time
+        time.sleep(delay)

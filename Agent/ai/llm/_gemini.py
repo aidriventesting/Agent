@@ -73,10 +73,10 @@ class GeminiClient(BaseLLMClient):
                     request_params["tools"] = convert_to_gemini_tools(tools)
                 else:
                     request_params["tools"] = tools
-            
-            if tool_choice:
-                from Agent.ai.llm._converters import convert_tool_choice_to_gemini_config
-                request_params["tool_config"] = convert_tool_choice_to_gemini_config(tool_choice)
+                
+                if tool_choice:
+                    from Agent.ai.llm._converters import convert_tool_choice_to_gemini_config
+                    request_params["tool_config"] = convert_tool_choice_to_gemini_config(tool_choice)
 
             response = client.generate_content(**request_params)
 

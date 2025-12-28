@@ -7,7 +7,7 @@ name = "robotframework-agent"
 version = "0.0.1"
 description = "AI-driven test automation agent for apps"
 readme = "readme.md"
-requires-python = ">=3.8"
+requires-python = ">=3.10"
 license = {text = "CC0-1.0"}
 authors = [
     {name = "Abdelkader HASSINE", email = "contact.abdelkaderhassine@gmail.com"},
@@ -20,11 +20,10 @@ classifiers = [
     "Topic :: Software Development :: Testing",
     "License :: CC0 1.0 Universal (CC0 1.0) Public Domain Dedication",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.8",
-    "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
     "Programming Language :: Python :: 3.11",
     "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
     "Framework :: Robot Framework",
     "Framework :: Robot Framework :: Library",
 ]
@@ -87,14 +86,31 @@ Repository = "https://github.com/aidriventesting/agent"
 Issues = "https://github.com/aidriventesting/agent/issues"
 
 [tool.setuptools]
-packages = ["Agent", "Agent.ai", "Agent.ai.llm", "Agent.ai.vlm", "Agent.config", "Agent.platforms", "Agent.utilities", "Agent.utilities.imguploader"]
+packages = [
+    "Agent",
+    "Agent.ai",
+    "Agent.ai.llm",
+    "Agent.ai.vlm",
+    "Agent.ai.prompts",
+    "Agent.config",
+    "Agent.core",
+    "Agent.platforms",
+    "Agent.platforms.collectors",
+    "Agent.platforms.locators",
+    "Agent.tools",
+    "Agent.tools.mobile",
+    "Agent.tools.visual",
+    "Agent.tools.web",
+    "Agent.utilities",
+    "Agent.utilities.imguploader",
+]
 
 [tool.setuptools.package-data]
 Agent = ["config/*.json"]
 
 [tool.black]
 line-length = 100
-target-version = ['py38', 'py39', 'py310', 'py311', 'py312']
+target-version = ['py310', 'py311', 'py312', 'py313']
 
 [tool.pytest.ini_options]
 testpaths = ["tests/utest"]

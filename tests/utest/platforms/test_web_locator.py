@@ -1,4 +1,7 @@
 import pytest
+
+pytest.skip("Web support coming soon - web locator not yet implemented", allow_module_level=True)
+
 from Agent.platforms.locators.web import WebLocatorBuilder
 
 

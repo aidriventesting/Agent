@@ -54,8 +54,8 @@ class OpenAIClient(BaseLLMClient):
 
             if tools:
                 params["tools"] = tools
-            if tool_choice:
-                params["tool_choice"] = tool_choice
+                if tool_choice:
+                    params["tool_choice"] = tool_choice
 
             response = self.client.chat.completions.create(**params)
             logger.debug(f"OpenAI API call successful. Tokens used: {response.usage.total_tokens}")
@@ -135,7 +135,7 @@ class OpenAIClient(BaseLLMClient):
             result["tool_calls"] = tool_calls
 
         if include_tokens:
-            logger.info(f"Tokens used: {response.usage}")
+            logger.debug(f"Tokens used: {response.usage}")
             result.update(
                 {
                     "prompt_tokens": response.usage.prompt_tokens,

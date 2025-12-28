@@ -173,3 +173,19 @@ Find the element that best matches this description."""
             "confidence": response.get("confidence", "unknown"),
             "reason": response.get("reason", ""),
         }
+
+
+if __name__ == "__main__":
+    selector = OmniParserElementSelector()
+    result = selector.select_element(
+        elements_data={
+            "icon3": {"type": "icon", "bbox": [0.419, 0.17, 0.574, 0.266], "interactivity": True, "content": "st"},
+            "icon4": {"type": "icon", "bbox": [0.419, 0.17, 0.574, 0.266], "interactivity": False, "content": "st"},
+            "icon5": {"type": "icon", "bbox": [0.419, 0.17, 0.574, 0.266], "interactivity": False, "content": "st"},
+            "icon6": {"type": "icon", "bbox": [0.419, 0.17, 0.574, 0.266], "interactivity": False, "content": "st"},
+            "icon7": {"type": "icon", "bbox": [0.419, 0.17, 0.574, 0.266], "interactivity": False, "content": "st"},
+            "icon8": {"type": "icon", "bbox": [0.419, 0.17, 0.574, 0.266], "interactivity": False, "content": "YouTube"},
+        },
+        element_description="YouTube icon",
+    )
+    print(result)

@@ -10,7 +10,7 @@ Alpha — An evolving experiment, with varying levels of maturity across keyword
 
 ```robot
 *** Settings ***
-Library    Agent    llm_client=openai    llm_model=gpt-4o-mini
+Library    Agent    llm_client=openai    llm_model=gpt-4.1    platform_type=mobile    element_source=accessibility
 
 *** Test Cases ***
 Login
@@ -26,7 +26,7 @@ Login
 # Core
 pip install robotframework-agent
 
-# Web testing (+ Playwright)
+# Web testing (coming soon)
 pip install robotframework-agent[web]
 
 # Mobile testing (+ Appium)
@@ -34,6 +34,26 @@ pip install robotframework-agent[mobile]
 
 # Development (all tools)
 pip install robotframework-agent[dev]
+```
+
+## LLM Providers
+
+Supports OpenAI (default), Anthropic Claude, and Google Gemini.
+
+```bash
+# With Anthropic/Claude
+pip install robotframework-agent[anthropic]
+
+# With Google Gemini
+pip install robotframework-agent[gemini]
+```
+
+```robot
+# Use Claude
+Library    Agent    llm_client=anthropic    llm_model=claude-sonnet-4
+
+# Use Gemini
+Library    Agent    llm_client=gemini    llm_model=gemini-2.0-flash
 ```
 
 ## Keywords
@@ -60,11 +80,12 @@ pip install robotframework-agent[dev]
 Instruction → LLM → UI Context → Tool Selection → Execution
 ```
 
+Experiments and design choices are informed by research on AI agents and UI perception:
+- Support Vision-based UI parsing using OmniParser for element detection
+- Set-of-Mark (SoM) technique for visual grounding
+- Multi-provider LLM support (OpenAI, Anthropic, Gemini)
 
-Design choices are informed by research on AI agents and UI perception.
-Ideas are iterated and evaluated in our evolving lab suite:
-[AgentArena](https://github.com/aidriventesting/AgentArena).
-
+Ideas are tested and refined in [AgentArena](https://github.com/aidriventesting/AgentArena), our experimental testing environment.
 
 ## Presented at RoboCon 2026 (Helsinki)
 

@@ -7,6 +7,13 @@ class KeywordRunner:
     
     def __init__(self, platform) -> None:
         self.platform = platform
+        self._appium = None
+    
+    @property
+    def appium(self):
+        if self._appium is None:
+            self._appium = BuiltIn().get_library_instance('AppiumLibrary')
+        return self._appium
     
     def run_keyword(self, keyword_name: str, *args: Any) -> Any:
         return BuiltIn().run_keyword(keyword_name, *args)

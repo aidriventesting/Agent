@@ -18,9 +18,9 @@ class MobileLocatorBuilder:
     
     def build_android(self, element: Dict[str, Any]) -> str:
         """
-        Build Appium locator for Android.
+        Build XPath locator combining all available attributes.
         
-        Priority: id > accessibility_id > xpath[@text] > class
+        Returns: "//*[@resource-id='x' and @content-desc='y' and @text='z']"
         """
         resource_id = element.get('resource_id', '').strip()
         acc_label = element.get('accessibility_label', '') or element.get('content_desc', '')
@@ -28,25 +28,30 @@ class MobileLocatorBuilder:
         text = element.get('text', '').strip()
         class_name = element.get('class_name', '').strip()
         
+        conditions = []
+        
         if resource_id:
-            return f"id={resource_id}"
+            conditions.append(f"@resource-id='{resource_id}'")
         
         if acc_label:
-            return f"accessibility_id={acc_label}"
+            conditions.append(f"@content-desc='{acc_label}'")
         
         if text:
-            return f"//*[@text='{text}']"
+            conditions.append(f"@text='{text}'")
         
-        if class_name:
-            return f"class={class_name}"
+        if not conditions:
+            if class_name:
+                return f"//{class_name}"
+            raise AssertionError("Cannot build locator: element has no usable attributes")
         
-        raise AssertionError("Cannot build locator: element has no usable attributes")
+        base = f"//{class_name}" if class_name else "//*"
+        return f"{base}[{' and '.join(conditions)}]"
     
     def build_ios(self, element: Dict[str, Any]) -> str:
         """
-        Build Appium locator for iOS.
+        Build iOS predicate string combining all available attributes.
         
-        Priority: id > accessibility_id > predicate string > class
+        Returns: "-ios predicate string:name == 'x' AND label == 'y'"
         """
         resource_id = element.get('resource_id', '').strip()
         acc_label = element.get('accessibility_label', '') or element.get('label', '')
@@ -54,17 +59,23 @@ class MobileLocatorBuilder:
         text = element.get('text', '').strip()
         class_name = element.get('class_name', '').strip()
         
+        conditions = []
+        
         if resource_id:
-            return f"id={resource_id}"
+            conditions.append(f"name == '{resource_id}'")
         
         if acc_label:
-            return f"accessibility_id={acc_label}"
+            escaped = acc_label.replace("'", "\\'")
+            conditions.append(f"label == '{escaped}'")
         
         if text:
-            escaped_text = text.replace("'", "\\'")
-            return f"-ios predicate string:label == '{escaped_text}' OR value == '{escaped_text}'"
+            escaped = text.replace("'", "\\'")
+            conditions.append(f"value == '{escaped}'")
         
         if class_name:
-            return f"class={class_name}"
+            conditions.append(f"type == '{class_name}'")
         
-        raise AssertionError("Cannot build locator: element has no usable attributes")
+        if not conditions:
+            raise AssertionError("Cannot build locator: element has no usable attributes")
+        
+        return f"-ios predicate string:{' AND '.join(conditions)}"

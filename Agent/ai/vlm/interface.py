@@ -127,6 +127,79 @@ class OmniParserOrchestrator:
         
         return result
 
+    def detect_all_elements(
+        self,
+        image_base64: str,
+        element_type: str = "interactive",
+        box_threshold: Optional[float] = None,
+        iou_threshold: Optional[float] = None,
+        use_paddleocr: Optional[bool] = None,
+        imgsz: Optional[int] = None,
+    ) -> List[Dict[str, Any]]:
+        """
+        Detect all elements using OmniParser.
+        
+        Args:
+            image_base64: Base64 encoded image
+            element_type: Type filter ('interactive', 'text', 'icon', 'all')
+            
+        Returns:
+            List of elements in standard format compatible with DOM elements
+            Example: [{'text': 'Login', 'bbox': {'x': 10, 'y': 20, 'width': 100, 'height': 50}, 'source': 'omniparser'}, ...]
+        """
+        logger.debug(f"🔍 Detecting all elements with OmniParser (type={element_type})")
+        
+        image_temp_path, parsed_text = self.client.parse_image(
+            image_base64=image_base64,
+            box_threshold=box_threshold,
+            iou_threshold=iou_threshold,
+            use_paddleocr=use_paddleocr,
+            imgsz=imgsz,
+        )
+        
+        if not parsed_text:
+            logger.debug("❌ OmniParser detected no elements")
+            return []
+        
+        processor = OmniParserResultProcessor(
+            response_text=parsed_text,
+            image_temp_path=image_temp_path,
+        )
+        elements_data = processor.get_parsed_ui_elements(element_type=element_type)
+        
+        if not elements_data:
+            logger.debug(f"❌ No elements of type '{element_type}' found")
+            return []
+        
+        from PIL import Image
+        with Image.open(image_temp_path) as img:
+            width, height = img.size
+        
+        result = []
+        for key, data in elements_data.items():
+            bbox_norm = data.get("bbox", [0, 0, 0, 0])
+            x1 = int(bbox_norm[0] * width)
+            y1 = int(bbox_norm[1] * height)
+            x2 = int(bbox_norm[2] * width)
+            y2 = int(bbox_norm[3] * height)
+            
+            element = {
+                "text": data.get("content", ""),
+                "class_name": data.get("type", "unknown"),
+                "bbox": {
+                    "x": x1,
+                    "y": y1,
+                    "width": x2 - x1,
+                    "height": y2 - y1
+                },
+                "source": "omniparser",
+                "interactivity": data.get("interactivity", "unknown")
+            }
+            result.append(element)
+        
+        logger.debug(f"✅ Detected {len(result)} visual elements")
+        return result
+
     @staticmethod
     def get_element_center_coordinates(
         element_result: Dict[str, Any]
@@ -217,3 +290,12 @@ class OmniParserOrchestrator:
             image_width=width,
             image_height=height,
         )
+
+
+if __name__ == "__main__":
+    orchestrator = OmniParserOrchestrator()
+    result = orchestrator.find_element(
+        element_description="YouTube icon",
+        image_path="tests/_data/mobilescreenshots/screenshot-Google Pixel 5-11.0.png"
+    )
+    print(result)

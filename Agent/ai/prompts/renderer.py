@@ -66,6 +66,10 @@ class UIRenderer:
         """Render a single Android element."""
         parts = []
         
+        class_name = el.get('class_name', 'unknown')
+        short_class = class_name.split('.')[-1] if '.' in class_name else class_name
+        parts.append(f"[{short_class}]")
+        
         if el.get("text"):
             parts.append(f"text='{el['text']}'")
         
@@ -74,17 +78,27 @@ class UIRenderer:
         
         content_desc = el.get("accessibility_label", '') or el.get("content_desc", '')
         if content_desc:
-            parts.append(f"content-desc='{content_desc}'")
+            parts.append(f"desc='{content_desc}'")
         
-        if parts:
-            return f"{index}. {' | '.join(parts)}"
+        bbox = el.get("bbox", {})
+        if bbox:
+            y = bbox.get("y", 0)
+            x = bbox.get("x", 0)
+            w = bbox.get("width", 0)
+            h = bbox.get("height", 0)
+            pos = "top" if y < 400 else "middle" if y < 1200 else "bottom"
+            side = "left" if x < 300 else "center" if x < 700 else "right"
+            parts.append(f"pos={pos}-{side} size={w}x{h}")
         
-        class_name = el.get('class_name', 'unknown')
-        return f"{index}. {class_name}"
+        return f"{index}. {' | '.join(parts)}"
     
     def _render_ios_element(self, index: int, el: Dict[str, Any]) -> str:
         """Render a single iOS element."""
         parts = []
+        
+        class_name = el.get('class_name', 'unknown')
+        short_class = class_name.replace('XCUIElementType', '') if 'XCUIElementType' in class_name else class_name
+        parts.append(f"[{short_class}]")
         
         if el.get("text"):
             parts.append(f"text='{el['text']}'")
@@ -96,8 +110,14 @@ class UIRenderer:
         if label:
             parts.append(f"label='{label}'")
         
-        if parts:
-            return f"{index}. {' | '.join(parts)}"
+        bbox = el.get("bbox", {})
+        if bbox:
+            y = bbox.get("y", 0)
+            x = bbox.get("x", 0)
+            w = bbox.get("width", 0)
+            h = bbox.get("height", 0)
+            pos = "top" if y < 400 else "middle" if y < 1200 else "bottom"
+            side = "left" if x < 300 else "center" if x < 700 else "right"
+            parts.append(f"pos={pos}-{side} size={w}x{h}")
         
-        class_name = el.get('class_name', 'unknown')
-        return f"{index}. {class_name}"
+        return f"{index}. {' | '.join(parts)}"

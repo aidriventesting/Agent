@@ -36,13 +36,11 @@ class OmniParserClient:
         self.api_name = api_name or Config.OMNIPARSER_API_NAME
         self.hf_token = hf_token or Config.get_huggingface_token() or None
 
-        client_kwargs: Dict[str, Any] = {}
-        if self.hf_token:
-            # gradio_client 2.0+ uses 'token' instead of 'hf_token'
-            client_kwargs["token"] = self.hf_token
+        if not self.hf_token:
+            raise ValueError("HUGGINGFACE_API_KEY must be provided in environment variables.")
 
         try:
-            self._client = Client(self.space_id, **client_kwargs)
+            self._client = Client(self.space_id, token=self.hf_token)
             logger.debug(f"Initialized OmniParser client for space '{self.space_id}'")
         except Exception as exc:  # pragma: no cover - network failure
             raise OmniParserError(f"Failed to initialise OmniParser client: {exc}") from exc

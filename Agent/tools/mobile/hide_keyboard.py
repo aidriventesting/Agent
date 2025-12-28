@@ -27,7 +27,7 @@ class HideKeyboardTool(BaseTool):
         return False  # Global device action
     
     @property
-    def works_on_visual(self) -> bool:
+    def works_on_coordinates(self) -> bool:
         return False  # System-level action
     
     def get_parameters_schema(self) -> Dict[str, Any]:
