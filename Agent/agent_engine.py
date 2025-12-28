@@ -163,7 +163,7 @@ class AgentEngine:
         if screenshot_base64:
             context["screenshot_base64"] = screenshot_base64
         
-        logger.info(f"Elements sent to AI: {ui_candidates} elements")
+        logger.info(f"Elements sent to AI: {ui_candidates}")
         
         # Prepare AI request
         platform_name = self.platform.get_platform()
