@@ -44,8 +44,9 @@ def render_som(
     draw = ImageDraw.Draw(overlay)
     
     try:
+        #TODO: fix this for windows and linux ( pixelized font on those OS )
         font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 14)
-        font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 18)
+        font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 24)
     except:
         font = ImageFont.load_default()
         font_large = font
@@ -66,35 +67,42 @@ def render_som(
         source = element.get(source_key, "dom")
         color = COLOR_DOM if source == "dom" else COLOR_OMNIPARSER if source == "omniparser" else COLOR_DEFAULT
         
+        # Apply margin to create visual spacing between boxes
+        margin = 4
+        box_x1 = x + margin
+        box_y1 = y + margin
+        box_x2 = x + w - margin
+        box_y2 = y + h - margin
+        
         # Draw box with transparency
         draw.rectangle(
-            [x, y, x + w, y + h],
+            [box_x1, box_y1, box_x2, box_y2],
             outline=color + (255,),
             width=2
         )
         
-        # Draw label background
+        # Draw label background (top-left inside box)
         label = str(idx)
         label_bbox = draw.textbbox((0, 0), label, font=font_large)
-        label_w = label_bbox[2] - label_bbox[0] + 8
-        label_h = label_bbox[3] - label_bbox[1] + 4
+        label_w = label_bbox[2] - label_bbox[0] + 12
+        label_h = label_bbox[3] - label_bbox[1] + 8
         
-        label_x = x
-        label_y = y - label_h - 2
-        if label_y < 0:
-            label_y = y + 2
+        label_x = box_x1 + 5
+        label_y = box_y1 + 5
         
         draw.rectangle(
             [label_x, label_y, label_x + label_w, label_y + label_h],
             fill=color + (230,)
         )
         
-        # Draw label text
+        # Draw label text with stroke for better contrast
         draw.text(
-            (label_x + 4, label_y + 2),
+            (label_x + 6, label_y + 4),
             label,
             fill=(255, 255, 255, 255),
-            font=font_large
+            font=font_large,
+            stroke_width=2,
+            stroke_fill=(0, 0, 0, 255)
         )
     
     result = Image.alpha_composite(img, overlay).convert("RGB")

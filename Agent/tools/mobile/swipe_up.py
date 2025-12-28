@@ -4,10 +4,7 @@ from robot.api import logger
 
 
 class SwipeUpTool(BaseTool):
-    """Swipe up on the mobile screen.
-    
-    Useful for scrolling up in lists, closing bottom sheets, or revealing content below.
-    """
+    """Scroll content up on the mobile screen (reveal content above)."""
     
     @property
     def name(self) -> str:
@@ -15,7 +12,7 @@ class SwipeUpTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "Swipe up on the mobile screen (scroll up, close bottom sheet)"
+        return "Scroll content UP (reveal content above)"
     
     @property
     def category(self) -> ToolCategory:
@@ -26,7 +23,7 @@ class SwipeUpTool(BaseTool):
         return False  # Global screen gesture
     
     @property
-    def works_on_visual(self) -> bool:
+    def works_on_coordinates(self) -> bool:
         return False  # Works on viewport, not specific element
     
     def get_parameters_schema(self) -> Dict[str, Any]:
@@ -42,6 +39,6 @@ class SwipeUpTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
-        # Swipe from bottom (80%) to top (20%) vertically, middle of screen horizontally
-        executor.run_keyword("Swipe By Percent", 50, 80, 50, 20, "1s")
+        # Swipe from top (20%) to bottom (80%) vertically - scrolls content UP
+        executor.run_keyword("Swipe By Percent", 50, 20, 50, 80, "1s")
 

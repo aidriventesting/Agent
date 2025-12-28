@@ -77,9 +77,9 @@ class AnthropicClient(BaseLLMClient):
                 else:
                     api_params["tools"] = tools
 
-            if tool_choice:
-                from Agent.ai.llm._converters import convert_tool_choice_to_anthropic
-                api_params["tool_choice"] = convert_tool_choice_to_anthropic(tool_choice)
+                if tool_choice:
+                    from Agent.ai.llm._converters import convert_tool_choice_to_anthropic
+                    api_params["tool_choice"] = convert_tool_choice_to_anthropic(tool_choice)
 
             response = self.client.messages.create(**api_params)
 

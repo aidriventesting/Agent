@@ -24,55 +24,34 @@ class ImageUploader:
         Returns base64 if all providers fail or none configured.
         """
         if not self.uploaders:
-            logger.warn("Fallback: returning the image in base64 (no provider configured)")
+            logger.debug("No upload provider configured, using base64")
             return f"data:image/png;base64,{base64_data}"
         
-        # Try each provider in order
-        for idx, uploader in enumerate(self.uploaders):
+        for uploader in self.uploaders:
             provider_name = type(uploader).__name__
-            logger.debug(f"Attempting upload with {provider_name} ({idx+1}/{len(self.uploaders)})")
             try:
                 result = uploader.upload_from_base64(base64_data)
-                
                 if result:
-                    logger.info(f"Image uploaded successfully with {provider_name}")
+                    logger.debug(f"Image uploaded via {provider_name}")
                     return result
-                else:
-                    logger.warn(f"{provider_name} failed to upload (returned None)")
-                    
-            except Exception as e:
-                logger.warn(f"{provider_name} raised an error: {str(e)}")
+            except Exception:
+                pass
         
-        logger.warn("Fallback: returning the image in base64 (all providers failed)")
+        logger.debug("Upload failed, using base64 fallback")
         return f"data:image/png;base64,{base64_data}"
 
     def _build_uploaders_list(self, service: str) -> list[BaseImageUploader]:
-        """
-        Builds list of uploaders based on service selection.
-        In auto mode, adds all available providers (imgbb has priority).
-        """
         uploaders = []
-        
-        # Debug config loading
-        has_imgbb = bool(self.config.IMGBB_API_KEY)
-        has_freeimage = bool(self.config.FREEIMAGEHOST_API_KEY)
-        logger.debug(f"ImageUploader init: service={service}, has_imgbb={has_imgbb}, has_freeimage={has_freeimage}")
         
         if service == "imgbb" and self.config.IMGBB_API_KEY:
             uploaders.append(ImgBBUploader())
         elif service == "freeimagehost" and self.config.FREEIMAGEHOST_API_KEY:
             uploaders.append(FreeImageHostUploader())
         elif service == "auto":
-            # Priority order: imgbb first, then freeimagehost as fallback
             if self.config.IMGBB_API_KEY:
                 uploaders.append(ImgBBUploader())
             if self.config.FREEIMAGEHOST_API_KEY:
                 uploaders.append(FreeImageHostUploader())
-        
-        if not uploaders:
-            logger.warn("No upload service configured. Images will be returned in base64.")
-        else:
-            logger.debug(f"Configured uploaders: {[type(u).__name__ for u in uploaders]}")
         
         return uploaders
 

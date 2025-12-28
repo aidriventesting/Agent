@@ -1,10 +1,17 @@
-from typing import Any, Dict
+from typing import Any, Dict, Tuple
 from Agent.tools.base import BaseTool, ExecutorProtocol, ToolCategory
 from robot.api import logger
 
 
+def get_element_center(element: Dict[str, Any]) -> Tuple[int, int]:
+    bbox = element.get("bbox", {})
+    x = bbox.get("x", 0) + bbox.get("width", 0) // 2
+    y = bbox.get("y", 0) + bbox.get("height", 0) // 2
+    return x, y
+
+
 class ClickElementTool(BaseTool):
-    """Click on a mobile UI element."""
+    """Click on a mobile UI element using coordinates."""
     
     @property
     def name(self) -> str:
@@ -12,7 +19,7 @@ class ClickElementTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "Click element by INDEX from numbered XML list - USE ONLY when element has clear ID, resource-id, or unique text"
+        return "Tap/click element by INDEX. DO NOT use for text input - use input_text instead."
     
     @property
     def category(self) -> ToolCategory:
@@ -20,15 +27,15 @@ class ClickElementTool(BaseTool):
     
     @property
     def works_on_locator(self) -> bool:
-        return True  # Works with XML locator
+        return False
     
     @property
-    def works_on_visual(self) -> bool:
-        return False  # Only works with XML index
+    def works_on_coordinates(self) -> bool:
+        return True
     
     @property
-    def has_visual_equivalent(self) -> bool:
-        return True  # Has click_visual_element as visual alternative
+    def has_coordinates_alternative(self) -> bool:
+        return False
     
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
@@ -58,8 +65,8 @@ class ClickElementTool(BaseTool):
             )
         
         element = ui_candidates[element_index - 1]
-        locator = executor.build_locator(element)
+        x, y = get_element_center(element)
         
-        logger.debug(f"Built locator: {locator} from element: {element}")
-        executor.run_keyword("Click Element", locator)
+        logger.debug(f"Tapping at ({x}, {y}) for element: {element.get('text', '')}")
+        executor.run_keyword("Tap", [x, y])
 

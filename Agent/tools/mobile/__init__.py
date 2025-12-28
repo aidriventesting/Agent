@@ -7,7 +7,6 @@ from Agent.tools.mobile.swipe_right import SwipeRightTool
 from Agent.tools.mobile.swipe_up import SwipeUpTool
 from Agent.tools.mobile.hide_keyboard import HideKeyboardTool
 from Agent.tools.mobile.go_back import GoBackTool
-from Agent.tools.mobile.click_visual import ClickVisualElementTool
 
 
 MOBILE_TOOLS = [
@@ -20,7 +19,6 @@ MOBILE_TOOLS = [
     SwipeUpTool,
     HideKeyboardTool,
     GoBackTool,
-    ClickVisualElementTool,
 ]
 
 __all__ = [
@@ -34,5 +32,4 @@ __all__ = [
     "SwipeUpTool",
     "HideKeyboardTool",
     "GoBackTool",
-    "ClickVisualElementTool",
 ]

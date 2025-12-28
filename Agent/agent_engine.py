@@ -1,6 +1,6 @@
-from typing import Any, Dict, List, Optional, Union
+from typing import Any, Dict, List, Optional
 
-from Agent.platforms import DeviceConnector, WebConnectorRF, create_platform
+from Agent.platforms import DeviceConnector, create_platform
 from Agent.ai.llm.facade import UnifiedLLMFacade
 from Agent.ai._promptcomposer import AgentPromptComposer
 from Agent.utilities.imguploader.imghandler import ImageUploader
@@ -8,114 +8,84 @@ from Agent.tools.registry import ToolRegistry
 from Agent.tools.base import ToolCategory
 from Agent.core.keyword_runner import KeywordRunner
 from Agent.tools.mobile import MOBILE_TOOLS
-from Agent.tools.web import WEB_TOOLS
 from Agent.tools.visual import VISUAL_TOOLS
 from robot.api import logger
 
 
 class AgentEngine:
-    """Core engine for AI-driven test automation.
-    
-    Orchestrates the complete Agent.Do and Agent.VisualCheck flows:
-    - Capturing UI context and screenshots
-    - Composing AI prompts and calling LLMs
-    - Tool-based action execution and visual verification
-    
-    This is the main orchestrator that coordinates platform connectors,
-    AI services, tool registry, and executors.
-    """
+    """Core engine for AI-driven Android test automation."""
 
     def __init__(
         self, 
         llm_client: str = "openai", 
         llm_model: str = "gpt-4o-mini",
-        platform: Optional[Union[DeviceConnector, WebConnectorRF]] = None,
+        platform: Optional[DeviceConnector] = None,
         platform_type: str = "auto",
-        click_mode: str = "xml",
-        input_mode: str = "text",
+        element_source: str = "accessibility",
+        llm_input_format: str = "text",
     ) -> None:
-        # Platform connector - create or use provided
         if platform is None:
             self.platform = create_platform(platform_type)
         else:
             self.platform = platform
         
-        # Detect platform type
-        platform_name = self.platform.get_platform()
-        logger.info(f"🌐 Platform detected: {platform_name}")
+        logger.info("📱 Platform: mobile")
         
-        # AI components
         self.llm = UnifiedLLMFacade(provider=llm_client, model=llm_model)
-        self.prompt_composer = AgentPromptComposer(
-            platform_connector=self.platform
-        )
         self.image_uploader = ImageUploader(service="auto")
         
-        # Tool execution components
         self.tool_registry = ToolRegistry()
         self.executor = KeywordRunner(self.platform)
         
-        # Register tools based on platform
-        if platform_name == "web":
-            self._register_web_tools()
-        else:
-            self._register_mobile_tools()
+        self._register_mobile_tools()
         self._register_visual_tools()
         
-        # Click strategy and input mode
-        self.click_mode = click_mode
-        self.input_mode = input_mode
-        logger.info(f"🎯 Click mode: {click_mode}, Input mode: {input_mode}")
+        self.prompt_composer = AgentPromptComposer(
+            tool_registry=self.tool_registry,
+            platform_connector=self.platform
+        )
+        
+        self.element_source = element_source
+        self.llm_input_format = llm_input_format
+        logger.info(f"🎯 Element source: {element_source}, LLM input format: {llm_input_format}")
     
     def _register_mobile_tools(self) -> None:
-        """Register all mobile tools in the registry."""
         for ToolClass in MOBILE_TOOLS:
             self.tool_registry.register(ToolClass())
-        
         mobile_tools_count = len(self.tool_registry.get_by_category(ToolCategory.MOBILE))
         logger.debug(f"📱 Registered {mobile_tools_count} mobile tools")
     
-    def _register_web_tools(self) -> None:
-        """Register all web tools in the registry."""
-        for ToolClass in WEB_TOOLS:
-            self.tool_registry.register(ToolClass())
-        
-        web_tools_count = len(self.tool_registry.get_by_category(ToolCategory.WEB))
-        logger.debug(f"🌐 Registered {web_tools_count} web tools")
-    
     def _register_visual_tools(self) -> None:
-        """Register all visual verification tools in the registry."""
         for ToolClass in VISUAL_TOOLS:
             self.tool_registry.register(ToolClass())
-        
         visual_tools_count = len(self.tool_registry.get_by_category(ToolCategory.VISUAL))
         logger.debug(f"👁️ Registered {visual_tools_count} visual tools")
     
     # ----------------------- Public API -----------------------
     
-    def set_click_mode(self, mode: str) -> None:
-        """Change click mode dynamically during test execution.
+    def set_element_source(self, source: str) -> None:
+        """Change element source dynamically.
         
         Args:
-            mode: 'xml' or 'visual'
+            source: 'accessibility' or 'vision'
         """
-        if mode not in ["xml", "visual"]:
-            raise ValueError(f"Invalid click_mode: {mode}. Choose: xml, visual")
+        if source not in ["accessibility", "vision"]:
+            raise ValueError(f"Invalid element_source: {source}. Choose: accessibility, vision")
         
-        self.click_mode = mode
-        logger.info(f"🔧 Click mode changed to: {mode}")
+        self.element_source = source
+        logger.info(f"🔧 Element source changed to: {source}")
     
-    def set_input_mode(self, mode: str) -> None:
-        """Change input mode dynamically during test execution.
+    def set_llm_input_format(self, format: str) -> None:
+        """Change LLM input format dynamically.
         
         Args:
-            mode: 'text' (numbered list) or 'som' (screenshot with numbered boxes)
+            format: 'text' or 'som'
         """
-        if mode not in ["text", "som"]:
-            raise ValueError(f"Invalid input_mode: {mode}. Choose: text, som")
+        if format not in ["text", "som"]:
+            raise ValueError(f"Invalid llm_input_format: {format}. Choose: text, som")
         
-        self.input_mode = mode
-        logger.info(f"🔧 Input mode changed to: {mode}")
+        self.llm_input_format = format
+        logger.info(f"🔧 LLM input format changed to: {format}")
     
     def do(self, instruction: str) -> None:
         """Execute AI-driven action based on natural language instruction.
@@ -125,21 +95,64 @@ class AgentEngine:
         """
         logger.info(f"🚀 Starting Agent.Do: '{instruction}'")
 
-        # Collect UI context (skip in visual-only mode)
-        ui_candidates = []
-        if self.click_mode != "visual":
-            ui_candidates = self.platform.collect_ui_candidates()
-        else:
-            logger.debug("⚡ UI collection skipped (mode: visual)")
-        
-        # Capture screenshot if needed (for SoM mode or visual click mode)
+        if hasattr(self.platform, 'wait_for_page_stable'):
+            self.platform.wait_for_page_stable()
+
         screenshot_base64 = None
-        need_screenshot = self.input_mode == "som" or self.click_mode == "visual"
-        if need_screenshot:
+        ui_candidates = []
+        annotated_image_path = None
+        
+        # Collect UI elements based on element source
+        if self.element_source == "accessibility":
+            ui_candidates = self.platform.collect_ui_candidates()
+            logger.debug(f"📋 Collected {len(ui_candidates)} accessibility elements")
+        elif self.element_source == "vision":
             screenshot_base64 = self.platform.get_screenshot_base64()
-            logger.debug(f"📸 Screenshot captured (input_mode: {self.input_mode})")
-        else:
-            logger.debug(f"⚡ Screenshot skipped (input_mode: {self.input_mode})")
+            from Agent.ai.vlm._client import OmniParserClient
+            from Agent.ai.vlm._parser import OmniParserResultProcessor
+            from PIL import Image
+            
+            client = OmniParserClient()
+            image_temp_path, parsed_text = client.parse_image(image_base64=screenshot_base64)
+            annotated_image_path = image_temp_path
+            
+            if parsed_text:
+                processor = OmniParserResultProcessor(
+                    response_text=parsed_text,
+                    image_temp_path=image_temp_path,
+                )
+                elements_data = processor.get_parsed_ui_elements(element_type="all")
+                
+                with Image.open(image_temp_path) as img:
+                    width, height = img.size
+                
+                for key, data in elements_data.items():
+                    bbox_norm = data.get("bbox", [0, 0, 0, 0])
+                    x1 = int(bbox_norm[0] * width)
+                    y1 = int(bbox_norm[1] * height)
+                    x2 = int(bbox_norm[2] * width)
+                    y2 = int(bbox_norm[3] * height)
+                    
+                    element = {
+                        "text": data.get("content", ""),
+                        "class_name": data.get("type", "unknown"),
+                        "bbox": {
+                            "x": x1,
+                            "y": y1,
+                            "width": x2 - x1,
+                            "height": y2 - y1
+                        },
+                        "source": "omniparser",
+                        "interactivity": data.get("interactivity", "unknown")
+                    }
+                    ui_candidates.append(element)
+                
+            logger.debug(f"👁️ Detected {len(ui_candidates)} visual elements")
+        
+        # Capture screenshot if needed for SoM mode and not already captured
+        if self.llm_input_format == "som" and not screenshot_base64:
+            screenshot_base64 = self.platform.get_screenshot_base64()
+            logger.debug("📸 Screenshot captured for SoM mode")
         
         # Prepare context for tool execution
         context = {
@@ -150,17 +163,28 @@ class AgentEngine:
         if screenshot_base64:
             context["screenshot_base64"] = screenshot_base64
         
+        logger.info(f"Elements sent to AI: {ui_candidates}")
+        
         # Prepare AI request
         platform_name = self.platform.get_platform()
+        tool_category = "mobile"
         messages = self.prompt_composer.compose_do_messages(
             instruction=instruction,
             ui_elements=ui_candidates,
             platform=platform_name,
-            click_mode=self.click_mode,
-            input_mode=self.input_mode,
+            element_source=self.element_source,
+            llm_input_format=self.llm_input_format,
             screenshot_base64=screenshot_base64,
+            annotated_image_path=annotated_image_path,
         )
-        tools = self.prompt_composer.get_do_tools(category=platform_name, click_mode=self.click_mode)
+        if annotated_image_path:
+            logger.info(f"Annotated image: {annotated_image_path}")
+        
+        tools = self.prompt_composer.get_do_tools(category=tool_category, element_source=self.element_source)
+        logger.debug(f"Tools for {tool_category}: {len(tools)} tools")
+        
+        if not tools:
+            raise RuntimeError(f"No tools registered for platform '{platform_name}'. Check tool registration.")
         
         # Call AI
         result = self.llm.send_ai_request_with_tools(
@@ -169,12 +193,15 @@ class AgentEngine:
             tool_choice="required",
             temperature=0
         )
-
-        logger.debug(f"AI response: {result}")
+        
+        tool_call = result.get("tool_calls", [{}])[0]
+        tool_name = tool_call.get("function", {}).get("name", "unknown")
+        tool_args = tool_call.get("function", {}).get("arguments", {})
+        logger.info(f"🤖 AI chose: {tool_name}({tool_args})")
         
         # Execute tool
         self._execute_do_from_tool_calls(result, context, instruction)
-        logger.info("✅ Agent.Do completed")
+        logger.info("Agent.Do completed")
 
     def visual_check(self, instruction: str) -> None:
         """Execute visual verification based on natural language instruction.
@@ -184,6 +211,10 @@ class AgentEngine:
                         (e.g., "verify the home screen is displayed")
         """
         logger.info(f"👁️ Starting Agent.VisualCheck: '{instruction}'")
+
+        if hasattr(self.platform, 'wait_for_page_stable'):
+            self.platform.wait_for_page_stable()
+
         screenshot_base64 = self.platform.get_screenshot_base64()
         
         # Embed screenshot to Robot Framework log
@@ -194,6 +225,10 @@ class AgentEngine:
         # Prepare AI request
         messages = self.prompt_composer.compose_visual_check_messages(instruction, image_url)
         tools = self.prompt_composer.get_visual_check_tools()
+        logger.debug(f"Visual check tools: {len(tools)} tools")
+        
+        if not tools:
+            raise RuntimeError("No visual tools registered. Check tool registration.")
         
         # Call AI
         result = self.llm.send_ai_request_with_tools(
@@ -219,6 +254,10 @@ class AgentEngine:
         """
         import json
         logger.info(f"❓ Agent.Ask: '{question}'")
+        
+        if hasattr(self.platform, 'wait_for_page_stable'):
+            self.platform.wait_for_page_stable()
+        
         screenshot_base64 = self.platform.get_screenshot_base64()
         self.platform.embed_image_to_log(screenshot_base64)
         
@@ -248,6 +287,10 @@ class AgentEngine:
         from Agent.ai.vlm.interface import OmniParserOrchestrator
         
         logger.info(f"🔍 Agent.Find Visual Element: '{description}'")
+        
+        if hasattr(self.platform, 'wait_for_page_stable'):
+            self.platform.wait_for_page_stable()
+        
         screenshot_base64 = self.platform.get_screenshot_base64()
         self.platform.embed_image_to_log(screenshot_base64)
         
@@ -259,7 +302,7 @@ class AgentEngine:
         result = orchestrator.find_element(
             element_description=description,
             image_base64=screenshot_base64,
-            element_type="interactive"
+            element_type="all"
         )
         
         if not result:
