@@ -29,10 +29,12 @@ class InteractiveFilter:
         if content_desc and str(content_desc).strip():
             return True
         
+        resource_id = e.get('resource-id', '').strip()
         class_name = e.get('class', '')
-        for interactive_class in self.INTERACTIVE_CLASSES:
-            if interactive_class in class_name:
-                return True
+        
+        if resource_id:
+            for interactive_class in self.INTERACTIVE_CLASSES:
+                if interactive_class in class_name:
+                    return True
         
         return False
-
