@@ -67,12 +67,24 @@ def render_som(
         source = element.get(source_key, "dom")
         color = COLOR_DOM if source == "dom" else COLOR_OMNIPARSER if source == "omniparser" else COLOR_DEFAULT
         
-        # Apply margin to create visual spacing between boxes
+        # Apply margin to create visual spacing, but ensure box remains valid
         margin = 4
+        # Adjust margin if element is too small
+        if w <= 2 * margin:
+            margin = max(0, w // 2 - 1)
+        if h <= 2 * margin:
+            margin = min(margin, max(0, h // 2 - 1))
+        
         box_x1 = x + margin
         box_y1 = y + margin
         box_x2 = x + w - margin
         box_y2 = y + h - margin
+        
+        # Ensure valid coordinates (x2 > x1, y2 > y1)
+        if box_x2 <= box_x1:
+            box_x2 = box_x1 + 1
+        if box_y2 <= box_y1:
+            box_y2 = box_y1 + 1
         
         # Draw box with transparency
         draw.rectangle(
