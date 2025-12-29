@@ -1,19 +1,17 @@
 """
 UI Collectors for mobile automation.
 
-This module provides strategies for collecting UI elements:
-- XMLCollector: XML page source parsing (Android/iOS)
+- AndroidCollector: Android XML page source parsing
+- IOSCollector: iOS XML page source parsing (NotImplemented)
 """
 
-from Agent.platforms.collectors.base_collector import BaseUICollector
-from Agent.platforms.collectors.collector_factory import CollectorRegistry
-from Agent.platforms.collectors.xml_collector import XMLCollector
+from Agent.platforms.collectors.android_collector import AndroidCollector
+from Agent.platforms.collectors.ios_collector import IOSCollector
 from Agent.platforms.collectors.som_renderer import render_som, bbox_center
 
 __all__ = [
-    'BaseUICollector',
-    'CollectorRegistry',
-    'XMLCollector',
+    'AndroidCollector',
+    'IOSCollector',
     'render_som',
     'bbox_center',
 ]
