@@ -4,18 +4,29 @@ from typing import Any, Dict
 class AndroidLocatorBuilder:
     """Builds Appium locators for Android elements."""
     
-    def build(self, element: Dict[str, Any], id_only: bool = False) -> str:
-        if id_only:
-            return self.build_identifiers_only(element)
-        return self.build_locator_unique_content(element)
-    
-    def build_locator_unique_content(self, element: Dict[str, Any]) -> str:
+    def build(self, element: Dict[str, Any], strategy: str = 'auto') -> str:
         """
         Args:
             element: Dict with raw XML attributes
+            strategy: 'auto' | 'id_only' | 'bounds' | 'xpath_attrs' | 'xpath_all'
         Returns:
-            Unique content: resource-id > content-desc > text
+            Appium locator string
+        Example: build(elem, 'id_only') -> 'id=com.android:id/button'
         """
+        if strategy == 'auto':
+            return self._build_locator_unique_content(element)
+        elif strategy == 'id_only':
+            return self.build_identifiers_only(element)
+        elif strategy == 'bounds':
+            return self.build_by_bounds(element)
+        elif strategy == 'xpath_attrs':
+            return self.build_xpath_attributes(element)
+        elif strategy == 'xpath_all':
+            return self.build_xpath_all(element)
+        else:
+            raise ValueError(f"Unknown strategy: {strategy}")
+    
+    def _build_locator_unique_content(self, element: Dict[str, Any]) -> str:
         resource_id = self._get_str(element, 'resource-id')
         if resource_id:
             return f"id={resource_id}"
@@ -30,6 +41,7 @@ class AndroidLocatorBuilder:
         
         raise AssertionError("Cannot build locator: no usable attributes")
     
+    #TODO: see if this should be private after adding locator strategies ( build )
     def build_identifiers_only(self, element: Dict[str, Any]) -> str:
         """
         Args:
