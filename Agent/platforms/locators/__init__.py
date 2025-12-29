@@ -1,9 +1,3 @@
-from Agent.platforms.locators.mobile import MobileLocatorBuilder
-from Agent.platforms.locators.android_locator import AndroidLocatorBuilder
-from Agent.platforms.locators.ios_locator import IOSLocatorBuilder
+from Agent.platforms.locators.mobile_locator import MobileLocatorBuilder
 
-__all__ = [
-    "MobileLocatorBuilder",
-    "AndroidLocatorBuilder",
-    "IOSLocatorBuilder",
-]
+__all__ = ["MobileLocatorBuilder"]
