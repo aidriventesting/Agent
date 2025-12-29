@@ -1,8 +1,10 @@
 from typing import Any, Dict, List
 from robot.api import logger
 from robot.libraries.BuiltIn import BuiltIn
-from Agent.platforms.collectors.xml_collector import XMLCollector
+from Agent.platforms.collectors.android_collector import AndroidCollector
+from Agent.platforms.collectors.ios_collector import IOSCollector
 from Agent.platforms.locators.mobile import MobileLocatorBuilder
+from Agent.platforms.filters.android import AndroidFilterPipeline
 from Agent.ai.prompts.renderer import UIRenderer
 
 
@@ -13,12 +15,12 @@ class DeviceConnector:
         self._appium_lib = None
         self._driver = None
         self._session_id = None
-        self._collector = XMLCollector()
+        self._android_collector = AndroidCollector()
+        self._ios_collector = IOSCollector()
         self.locator_builder = MobileLocatorBuilder()
         self._renderer = UIRenderer()
 
     def _get_driver(self) -> Any:
-        """Get Appium driver instance."""
         if self._appium_lib is None:
             self._appium_lib = BuiltIn().get_library_instance('AppiumLibrary')
         
@@ -54,29 +56,45 @@ class DeviceConnector:
         return self._driver
 
     def get_platform(self) -> str:
-        """Detect platform from driver capabilities."""
         caps = self._get_driver().capabilities
         platform = caps.get('platformName', '').lower()
         return 'ios' if 'ios' in platform else 'android'
+
+    def get_screen_size(self) -> Dict[str, int]:
+        size = self._get_driver().get_window_size()
+        return {'width': size.get('width', 0), 'height': size.get('height', 0)}
 
     def get_ui_xml(self) -> str:
         return self._get_driver().page_source
 
     def collect_ui_candidates(self, max_items: int = 50) -> List[Dict[str, Any]]:
-        """Collect interactive UI elements from current screen."""
         xml = self.get_ui_xml()
         platform = self.get_platform()
-        self._collector.set_platform(platform)
-        return self._collector.parse_xml(xml, max_items=max_items)
+        
+        if platform == 'ios':
+            raise NotImplementedError("iOS not implemented yet")
+        
+        elements = self._android_collector.parse_xml(xml)
+        pipeline = AndroidFilterPipeline(self.get_screen_size())
+        filtered = pipeline.apply(elements)
+        
+        return filtered[:max_items]
 
-    def build_locator_from_element(self, element: Dict[str, Any]) -> str:
-        """Build Appium locator from element attributes."""
+    def collect_all_elements(self) -> List[Dict[str, Any]]:
+        xml = self.get_ui_xml()
+        platform = self.get_platform()
+        
+        if platform == 'ios':
+            raise NotImplementedError("iOS not implemented yet")
+        
+        return self._android_collector.parse_xml(xml)
+
+    def build_locator_from_element(self, element: Dict[str, Any], robust: bool = False) -> str:
         platform = self.get_platform()
         self.locator_builder.set_platform(platform)
-        return self.locator_builder.build(element)
+        return self.locator_builder.build(element, robust=robust)
 
     def render_ui_for_prompt(self, ui_elements: List[Dict[str, Any]]) -> str:
-        """Render UI elements as text for AI prompt."""
         platform = self.get_platform()
         return self._renderer.render(ui_elements, platform=platform)
 
