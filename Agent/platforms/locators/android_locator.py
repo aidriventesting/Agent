@@ -4,17 +4,17 @@ from typing import Any, Dict
 class AndroidLocatorBuilder:
     """Builds Appium locators for Android elements."""
     
-    def build(self, element: Dict[str, Any], robust: bool = False) -> str:
-        if robust:
-            return self.build_robust(element)
-        return self.build_priority(element)
+    def build(self, element: Dict[str, Any], id_only: bool = False) -> str:
+        if id_only:
+            return self.build_identifiers_only(element)
+        return self.build_locator_unique_content(element)
     
-    def build_priority(self, element: Dict[str, Any]) -> str:
+    def build_locator_unique_content(self, element: Dict[str, Any]) -> str:
         """
         Args:
             element: Dict with raw XML attributes
         Returns:
-            First available locator: id > accessibility_id > text > class
+            Unique content: resource-id > content-desc > text
         """
         resource_id = self._get_str(element, 'resource-id')
         if resource_id:
@@ -28,44 +28,107 @@ class AndroidLocatorBuilder:
         if text:
             return f"//*[@text={self._escape_xpath(text)}]"
         
-        class_name = self._get_str(element, 'class')
-        if class_name:
-            return f"class={class_name}"
-        
         raise AssertionError("Cannot build locator: no usable attributes")
     
-    def build_robust(self, element: Dict[str, Any]) -> str:
+    def build_identifiers_only(self, element: Dict[str, Any]) -> str:
         """
         Args:
             element: Dict with raw XML attributes
         Returns:
-            XPath combining all available attributes for uniqueness
+            Identifiers only: resource-id > content-desc, raise if none
+        Example: 'id=com.android:id/button' or 'accessibility_id=Navigate up'
         """
-        conditions = []
+        content_desc = self._get_str(element, 'content-desc')
+        if content_desc:
+            return f"accessibility_id={content_desc}"
         
         resource_id = self._get_str(element, 'resource-id')
         if resource_id:
-            conditions.append(f"@resource-id={self._escape_xpath(resource_id)}")
+            return f"id={resource_id}"
         
-        content_desc = self._get_str(element, 'content-desc')
-        if content_desc:
-            conditions.append(f"@content-desc={self._escape_xpath(content_desc)}")
-        
-        text = self._get_str(element, 'text')
-        if text:
-            conditions.append(f"@text={self._escape_xpath(text)}")
-        
+        raise ValueError("No ID attributes available")
+    
+    def build_by_bounds(self, element: Dict[str, Any]) -> str:
+        """
+        Args:
+            element: Dict with raw XML attributes
+        Returns:
+            XPath with bounds attribute
+        Example: '//*[@bounds="[0,72][1080,200]"]'
+        """
         bounds = self._get_str(element, 'bounds')
-        if bounds:
-            conditions.append(f"@bounds='{bounds}'")
+        if not bounds:
+            raise ValueError("No bounds attribute available")
         
         class_name = self._get_str(element, 'class')
+        base = f"//{class_name}" if class_name else "//*"
+        
+        return f"{base}[@bounds='{bounds}']"
+
+    def build_xpath_attributes(self, element: Dict[str, Any]) -> str:
+        """
+        Args:
+            element: Dict with raw XML attributes
+        Returns:
+            XPath with content attributes (resource-id, content-desc, text)
+        Example: '//Button[@resource-id="btn" and @text="Login"]'
+        """
+        return self._build_full_xpath(element, exclude_metadata=True)
+    
+    def build_xpath_all(self, element: Dict[str, Any]) -> str:
+        """
+        Args:
+            element: Dict with raw XML attributes
+        Returns:
+            XPath with ALL attributes including metadata (clickable, enabled, etc.)
+        Example: '//Button[@resource-id="btn" and @clickable="true"]'
+        """
+        return self._build_full_xpath(element, exclude_metadata=False)
+
+    def _build_full_xpath(
+        self, 
+        element: Dict[str, Any],
+        exclude_metadata: bool = True
+    ) -> str:
+        """
+        Args:
+            element: Dict with raw XML attributes
+            exclude_metadata: If True, exclude only computed (bbox, elementId, package)
+                             If False, also exclude bool/numeric values (except bounds)
+        Returns:
+            XPath combining selected attributes dynamically
+        """
+        excluded_base = {'bbox', 'elementId', 'package'}
+        
+        conditions = []
+        class_name = self._get_str(element, 'class')
+        
+        for key, value in element.items():
+            if key == 'class':
+                continue
+            
+            if key in excluded_base:
+                continue
+            
+            val_str = str(value).strip() if value else ''
+            if not val_str:
+                continue
+            
+            if not exclude_metadata:
+                if key != 'bounds':
+                    if val_str in ('true', 'false'):
+                        continue
+                    if val_str.isdigit():
+                        continue
+            
+            conditions.append(f"@{key}={self._escape_xpath(val_str)}")
+        
         base = f"//{class_name}" if class_name else "//*"
         
         if not conditions:
             if class_name:
                 return base
-            raise AssertionError("Cannot build locator: no usable attributes")
+            raise ValueError("No attributes available")
         
         return f"{base}[{' and '.join(conditions)}]"
     
