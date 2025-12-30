@@ -13,7 +13,7 @@ class InputTextTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "USE THIS when instruction contains 'input', 'type', 'enter', 'fill', 'write', 'saisir', 'taper' or mentions entering text. Types text into a text field."
+        return "USE THIS ONLY when instruction explicitly mentions entering TEXT: 'input', 'type', 'enter', 'fill', 'write', 'saisir', 'taper'. Types text into a text field. DO NOT use this tool to click or tap - use tap_element for that."
     
     @property
     def category(self) -> ToolCategory:
@@ -39,6 +39,10 @@ class InputTextTool(BaseTool):
                 "text": {
                     "type": "string",
                     "description": "The text to input into the element"
+                },
+                "reasoning": {
+                    "type": "string",
+                    "description": "Brief explanation (1 sentence) of WHY you chose this element and action"
                 }
             },
             "required": ["element_index", "text"]
@@ -50,21 +54,23 @@ class InputTextTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
-        element_index = arguments["element_index"]
-        text = arguments["text"]
+        element_index = arguments.get("element_index")
+        text = arguments.get("text")
+        reasoning = arguments.get("reasoning", "No reasoning provided")
         ui_candidates = context.get("ui_candidates", [])
         
-        if element_index < 1 or element_index > len(ui_candidates):
+        if not text:
+            raise AssertionError("'input_text' requires text argument. Use tap_element to click without entering text.")
+        
+        if element_index is None or element_index < 1 or element_index > len(ui_candidates):
             raise AssertionError(
                 f"Invalid element_index: {element_index}. Must be 1-{len(ui_candidates)}"
             )
         
-        if not text:
-            raise AssertionError("'input_text' requires text argument")
-        
         element = ui_candidates[element_index - 1]
         x, y = get_element_center(element)
         
+        logger.info(f"🧠 AI reasoning: {reasoning}")
         logger.debug(f"Tapping at ({x}, {y}) to focus, then input: '{text}'")
         executor.run_keyword("Tap", [x, y])
         executor.run_keyword("Sleep", "1s")

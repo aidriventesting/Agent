@@ -15,11 +15,11 @@ class ClickElementTool(BaseTool):
     
     @property
     def name(self) -> str:
-        return "tap_element"
+        return "click_element"
     
     @property
     def description(self) -> str:
-        return "Tap/click element by INDEX. DO NOT use for text input - use input_text instead."
+        return "CLICK/TAP on ANY visible element (buttons, links, suggestions, icons, list items). USE THIS for all clicking actions."
     
     @property
     def category(self) -> ToolCategory:
@@ -45,6 +45,10 @@ class ClickElementTool(BaseTool):
                     "type": "integer",
                     "description": "The index number of the element from the UI elements list (1-based)",
                     "minimum": 1
+                },
+                "reasoning": {
+                    "type": "string",
+                    "description": "Brief explanation (1 sentence) of WHY you chose this element and action"
                 }
             },
             "required": ["element_index"]
@@ -57,6 +61,7 @@ class ClickElementTool(BaseTool):
         context: Dict[str, Any]
     ) -> None:
         element_index = arguments["element_index"]
+        reasoning = arguments.get("reasoning", "No reasoning provided")
         ui_candidates = context.get("ui_candidates", [])
         
         if element_index < 1 or element_index > len(ui_candidates):
@@ -67,6 +72,7 @@ class ClickElementTool(BaseTool):
         element = ui_candidates[element_index - 1]
         x, y = get_element_center(element)
         
+        logger.info(f"🧠 AI reasoning: {reasoning}")
         logger.debug(f"Tapping at ({x}, {y}) for element: {element.get('text', '')}")
         executor.run_keyword("Tap", [x, y])
 

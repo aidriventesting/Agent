@@ -12,7 +12,7 @@ class ScrollDownTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "Scroll down the mobile screen"
+        return "NAVIGATION ONLY: Scroll content DOWN to reveal elements BELOW. NOT for clicking visible elements - use tap_element to click."
     
     @property
     def category(self) -> ToolCategory:
@@ -29,7 +29,12 @@ class ScrollDownTool(BaseTool):
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
             "type": "object",
-            "properties": {},
+            "properties": {
+                "reasoning": {
+                    "type": "string",
+                    "description": "Brief explanation (1 sentence) of WHY you chose this action"
+                }
+            },
             "required": []
         }
     
@@ -39,5 +44,7 @@ class ScrollDownTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
+        reasoning = arguments.get("reasoning", "No reasoning provided")
+        logger.info(f"🧠 AI reasoning: {reasoning}")
         executor.run_keyword("Swipe By Percent", 50, 80, 50, 20, "1s")
 

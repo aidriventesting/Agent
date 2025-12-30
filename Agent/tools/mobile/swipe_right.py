@@ -15,7 +15,7 @@ class SwipeRightTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "Swipe right on the mobile screen (for carousel, tabs, horizontal scrolling)"
+        return "USE THIS ONLY for horizontal navigation: carousels, image galleries, tabs. Do NOT use to click on visible elements - use tap_element instead."
     
     @property
     def category(self) -> ToolCategory:
@@ -32,7 +32,12 @@ class SwipeRightTool(BaseTool):
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
             "type": "object",
-            "properties": {},
+            "properties": {
+                "reasoning": {
+                    "type": "string",
+                    "description": "Brief explanation (1 sentence) of WHY you chose this action"
+                }
+            },
             "required": []
         }
     
@@ -42,6 +47,8 @@ class SwipeRightTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
+        reasoning = arguments.get("reasoning", "No reasoning provided")
+        logger.info(f"🧠 AI reasoning: {reasoning}")
         # Swipe from left (20%) to right (80%) horizontally, middle of screen vertically
         executor.run_keyword("Swipe By Percent", 20, 50, 80, 50, "1s")
 
