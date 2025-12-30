@@ -74,6 +74,9 @@ class DeviceConnector:
         elements = collector.parse_xml(xml)
         filtered = pipeline.apply(elements)
         
+        screen_size = self.get_screen_size()
+        self._add_normalized_bbox(filtered, screen_size)
+        
         filtered.sort(
             key=lambda e: (
                 bool(e.get('resource-id', '').strip()),
@@ -89,7 +92,30 @@ class DeviceConnector:
     def collect_all_elements(self) -> List[Dict[str, Any]]:
         xml = self.get_ui_xml()
         collector = self._get_collector()
-        return collector.parse_xml(xml)
+        elements = collector.parse_xml(xml)
+        
+        screen_size = self.get_screen_size()
+        self._add_normalized_bbox(elements, screen_size)
+        
+        return elements
+    
+    def _add_normalized_bbox(self, elements: List[Dict[str, Any]], screen_size: Dict[str, int]) -> None:
+        """Add bbox_normalized to each element."""
+        sw = screen_size.get('width', 0)
+        sh = screen_size.get('height', 0)
+        
+        if sw <= 0 or sh <= 0:
+            return
+        
+        for elem in elements:
+            bbox = elem.get('bbox', {})
+            if bbox:
+                elem['bbox_normalized'] = {
+                    'x': round(bbox.get('x', 0) / sw, 4),
+                    'y': round(bbox.get('y', 0) / sh, 4),
+                    'width': round(bbox.get('width', 0) / sw, 4),
+                    'height': round(bbox.get('height', 0) / sh, 4),
+                }
 
     def build_locator_from_element(self, element: Dict[str, Any], strategy: str = 'auto') -> str:
         """
@@ -104,7 +130,7 @@ class DeviceConnector:
 
     def render_ui_for_prompt(self, ui_elements: List[Dict[str, Any]]) -> str:
         platform = self.get_platform()
-        return self._get_renderer().render(ui_elements, platform=platform)
+        return self._get_renderer().serialize(ui_elements, platform=platform)
 
     def get_screenshot_base64(self) -> str:
         return self._get_driver().get_screenshot_as_base64()
@@ -148,6 +174,6 @@ class DeviceConnector:
     
     def _get_renderer(self):
         if self._renderer is None:
-            from Agent.platforms.collectors import render_som
-            self._renderer = type('Renderer', (), {'render': lambda self, elements, platform: render_som('', elements)})()
+            from Agent.platforms.grounding.text.serializer import TextSerializer
+            self._renderer = TextSerializer()
         return self._renderer
