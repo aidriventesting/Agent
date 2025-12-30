@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "robotframework-agent"
-version = "0.0.1"
+version = "0.0.2"
 description = "AI-driven test automation agent for apps"
 readme = "readme.md"
 requires-python = ">=3.10"
@@ -103,6 +103,7 @@ packages = [
     "Agent.tools.web",
     "Agent.utilities",
     "Agent.utilities.imguploader",
+    "Agent.tools.screen",
 ]
 
 [tool.setuptools.package-data]
