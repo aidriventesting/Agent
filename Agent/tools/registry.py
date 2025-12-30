@@ -8,9 +8,20 @@ class ToolRegistry:
     
     Tools can be registered dynamically and retrieved by:
     - name
-    - category (mobile, web, visual)
+    - category (mobile, web, screen)
     - all tools
+    - action-based selection (filters tools by parameters)
     """
+    
+    SCREEN_TOOL_SELECTION_RULES = {
+        "ask": {
+            "text": "answer_question",
+            "json": "answer_question_json"
+        },
+        "visual_check": {
+            "default": "assert_screen"
+        }
+    }
     
     _instance: Optional['ToolRegistry'] = None
     _tools: Dict[str, BaseTool] = {}
@@ -85,6 +96,39 @@ class ToolRegistry:
                 tool for tool in all_tools 
                 if not (tool.works_on_coordinates and not tool.works_on_locator)
             ]
+    
+    def get_tool_for_query(self, query_type: str, **kwargs) -> Optional[BaseTool]:
+        """Get single tool based on query type and parameters.
+        
+        Args:
+            query_type: Query type (e.g., "ask", "visual_check")
+            **kwargs: Parameters to filter tool (e.g., response_format="json")
+        
+        Returns:
+            Single tool matching criteria or None if not found
+        
+        Example:
+            tool = registry.get_tool_for_query("ask", response_format="json")
+            tool = registry.get_tool_for_query("visual_check")
+        """
+        rules = self.SCREEN_TOOL_SELECTION_RULES.get(query_type)
+        if not rules:
+            logger.warn(f"No selection rules found for query: {query_type}")
+            return None
+        
+        if query_type == "ask":
+            format_key = kwargs.get("response_format", "text")
+            tool_name = rules.get(format_key)
+        elif query_type == "visual_check":
+            tool_name = rules.get("default")
+        else:
+            return None
+        
+        if not tool_name:
+            logger.warn(f"No tool found for query: {query_type} with kwargs: {kwargs}")
+            return None
+        
+        return self.get(tool_name)
     
     def clear(self) -> None:
         self._tools.clear()

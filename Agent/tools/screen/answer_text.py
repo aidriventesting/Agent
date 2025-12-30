@@ -3,39 +3,39 @@ from Agent.tools.base import BaseTool, ExecutorProtocol, ToolCategory
 from robot.api import logger
 
 
-class ScrollDownTool(BaseTool):
-    """Scroll down the mobile screen."""
+class AnswerTextTool(BaseTool):
+    """Answer question about the screen with text response."""
     
     @property
     def name(self) -> str:
-        return "scroll_down"
+        return "answer_question"
     
     @property
     def description(self) -> str:
-        return "NAVIGATION ONLY: Scroll content DOWN to reveal elements BELOW. NOT for clicking visible elements - use tap_element to click."
+        return "Provide a text answer to the question about the screen content"
     
     @property
     def category(self) -> ToolCategory:
-        return ToolCategory.MOBILE
+        return ToolCategory.SCREEN
     
     @property
     def works_on_locator(self) -> bool:
-        return False  # Global screen action
+        return False
     
     @property
     def works_on_coordinates(self) -> bool:
-        return False  # Works on viewport, not specific element
+        return False
     
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
             "type": "object",
             "properties": {
-                "reasoning": {
+                "answer": {
                     "type": "string",
-                    "description": "Brief explanation (1 sentence) of WHY you chose this action"
+                    "description": "The text answer to the question based on what you see in the screenshot"
                 }
             },
-            "required": []
+            "required": ["answer"]
         }
     
     def execute(
@@ -43,8 +43,8 @@ class ScrollDownTool(BaseTool):
         executor: ExecutorProtocol, 
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
-    ) -> None:
-        reasoning = arguments.get("reasoning", "No reasoning provided")
-        logger.info(f"🧠 AI reasoning: {reasoning}")
-        executor.run_keyword("Swipe By Percent", 50, 80, 50, 20, "1s")
+    ) -> str:
+        answer = arguments.get("answer", "")
+        logger.info(f"💬 AI Answer: {answer[:100]}..." if len(answer) > 100 else f"💬 AI Answer: {answer}")
+        return answer
 

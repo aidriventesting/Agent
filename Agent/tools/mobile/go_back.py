@@ -32,7 +32,12 @@ class GoBackTool(BaseTool):
     def get_parameters_schema(self) -> Dict[str, Any]:
         return {
             "type": "object",
-            "properties": {},
+            "properties": {
+                "reasoning": {
+                    "type": "string",
+                    "description": "Brief explanation (1 sentence) of WHY you chose this action"
+                }
+            },
             "required": []
         }
     
@@ -42,5 +47,7 @@ class GoBackTool(BaseTool):
         arguments: Dict[str, Any], 
         context: Dict[str, Any]
     ) -> None:
+        reasoning = arguments.get("reasoning", "No reasoning provided")
+        logger.info(f"🧠 AI reasoning: {reasoning}")
         executor.run_keyword("Go Back")
 

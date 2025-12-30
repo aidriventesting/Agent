@@ -35,6 +35,10 @@ class LongPressTool(BaseTool):
                     "type": "integer",
                     "description": "The index number of the element from the UI elements list (1-based)",
                     "minimum": 1
+                },
+                "reasoning": {
+                    "type": "string",
+                    "description": "Brief explanation (1 sentence) of WHY you chose this element and action"
                 }
             },
             "required": ["element_index"]
@@ -47,6 +51,7 @@ class LongPressTool(BaseTool):
         context: Dict[str, Any]
     ) -> None:
         element_index = arguments["element_index"]
+        reasoning = arguments.get("reasoning", "No reasoning provided")
         ui_candidates = context.get("ui_candidates", [])
         
         if element_index < 1 or element_index > len(ui_candidates):
@@ -57,6 +62,7 @@ class LongPressTool(BaseTool):
         element = ui_candidates[element_index - 1]
         x, y = get_element_center(element)
         
+        logger.info(f"🧠 AI reasoning: {reasoning}")
         logger.debug(f"Long pressing at ({x}, {y}) for 2s")
         executor.run_keyword("Tap", [x, y], 1, "2s")
 
