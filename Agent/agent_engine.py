@@ -15,6 +15,12 @@ from robot.api import logger
 class AgentEngine:
     """Core engine for AI-driven Android test automation."""
 
+    SOM_CONFIG = {
+        'visual_annotation': True,
+        'text_format': 'compact',
+        'output_type': 'text'
+    }
+
     def __init__(
         self, 
         llm_client: str = "openai", 
@@ -176,6 +182,7 @@ class AgentEngine:
             llm_input_format=self.llm_input_format,
             screenshot_base64=screenshot_base64,
             annotated_image_path=annotated_image_path,
+            som_config=self.SOM_CONFIG if self.llm_input_format == "som" else None,
         )
         if annotated_image_path:
             logger.info(f"Annotated image: {annotated_image_path}")
