@@ -60,8 +60,13 @@ class DeviceConnector:
         return self._platform
 
     def get_screen_size(self) -> Dict[str, int]:
-        size = self._get_driver().get_window_size()
-        return {'width': size.get('width', 0), 'height': size.get('height', 0)}
+        try:
+            size = self._get_driver().get_window_size()
+            return {'width': size.get('width', 0), 'height': size.get('height', 0)}
+            #TODO: see if this is really needed and if there is better fallback
+        except Exception:
+            logger.warn("⚠️ Could not get screen size, using fallback 1080x1920")
+            return {'width': 1080, 'height': 1920}
 
     def get_ui_xml(self) -> str:
         return self._get_driver().page_source
