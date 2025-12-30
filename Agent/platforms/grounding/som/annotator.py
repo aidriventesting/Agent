@@ -1,5 +1,5 @@
 """
-Set-of-Mark (SoM) Renderer.
+SoM Visual Annotator.
 
 Draws numbered bounding boxes on screenshots for visual grounding.
 """
@@ -11,31 +11,23 @@ from typing import Any, Dict, List, Tuple
 from PIL import Image, ImageDraw, ImageFont
 
 
-# Colors for different sources
-COLOR_DOM = (34, 197, 94)        # Green for DOM elements (has locator)
-COLOR_OMNIPARSER = (249, 115, 22)  # Orange for OmniParser (click-only)
-COLOR_DEFAULT = (59, 130, 246)   # Blue default
+COLOR_DOM = (34, 197, 94)
+COLOR_OMNIPARSER = (249, 115, 22)
+COLOR_DEFAULT = (59, 130, 246)
 
 
-def render_som(
+def annotate_screenshot(
     screenshot_base64: str,
     elements: List[Dict[str, Any]],
     source_key: str = "source",
 ) -> str:
     """
-    Draw numbered bounding boxes on screenshot.
-    
     Args:
         screenshot_base64: Base64 encoded PNG/JPEG
-        elements: List with 'bbox' key {x, y, width, height} and optional source
-        source_key: Key to check for source type ("dom" or "omniparser")
-    
+        elements: List with 'bbox' key {x, y, width, height}
+        source_key: Key to check for source type
     Returns:
         Base64 of annotated image
-    
-    Example:
-        >>> elements = [{'text': 'Search', 'bbox': {'x': 10, 'y': 20, 'width': 100, 'height': 30}, 'source': 'dom'}]
-        >>> annotated = render_som(screenshot_b64, elements)
     """
     img_bytes = base64.b64decode(screenshot_base64)
     img = Image.open(io.BytesIO(img_bytes)).convert("RGBA")
@@ -44,10 +36,19 @@ def render_som(
     draw = ImageDraw.Draw(overlay)
     
     try:
-        #TODO: fix this for windows and linux ( pixelized font on those OS )
-        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 14)
-        font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 24)
-    except:
+        import platform
+        system = platform.system()
+        
+        if system == "Darwin":
+            font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 14)
+            font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 24)
+        elif system == "Windows":
+            font = ImageFont.truetype("arial.ttf", 14)
+            font_large = ImageFont.truetype("arial.ttf", 24)
+        else:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+            font_large = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
+    except Exception:
         font = ImageFont.load_default()
         font_large = font
     
@@ -67,21 +68,28 @@ def render_som(
         source = element.get(source_key, "dom")
         color = COLOR_DOM if source == "dom" else COLOR_OMNIPARSER if source == "omniparser" else COLOR_DEFAULT
         
-        # Apply margin to create visual spacing between boxes
         margin = 4
+        if w <= 2 * margin:
+            margin = max(0, w // 2 - 1)
+        if h <= 2 * margin:
+            margin = min(margin, max(0, h // 2 - 1))
+        
         box_x1 = x + margin
         box_y1 = y + margin
         box_x2 = x + w - margin
         box_y2 = y + h - margin
         
-        # Draw box with transparency
+        if box_x2 <= box_x1:
+            box_x2 = box_x1 + 1
+        if box_y2 <= box_y1:
+            box_y2 = box_y1 + 1
+        
         draw.rectangle(
             [box_x1, box_y1, box_x2, box_y2],
             outline=color + (255,),
             width=2
         )
         
-        # Draw label background (top-left inside box)
         label = str(idx)
         label_bbox = draw.textbbox((0, 0), label, font=font_large)
         label_w = label_bbox[2] - label_bbox[0] + 12
@@ -95,7 +103,6 @@ def render_som(
             fill=color + (230,)
         )
         
-        # Draw label text with stroke for better contrast
         draw.text(
             (label_x + 6, label_y + 4),
             label,
@@ -120,8 +127,4 @@ def bbox_center(bbox: Dict[str, int]) -> Tuple[int, int]:
     w = bbox.get("width", 0)
     h = bbox.get("height", 0)
     return (x + w // 2, y + h // 2)
-
-
-
-
 

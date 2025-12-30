@@ -1,9 +1,8 @@
 from Agent.platforms._mobileconnector import DeviceConnector
 from Agent.platforms._platformfactory import create_platform
 from Agent.platforms.locators import MobileLocatorBuilder
-from Agent.platforms.collectors import XMLCollector
+from Agent.platforms.collectors import AndroidCollector, IOSCollector
 
-# Placeholder for future web support
 WebConnectorRF = None
 
 __all__ = [
@@ -11,5 +10,6 @@ __all__ = [
     "WebConnectorRF",
     "create_platform",
     "MobileLocatorBuilder",
-    "XMLCollector",
+    "AndroidCollector",
+    "IOSCollector",
 ]
