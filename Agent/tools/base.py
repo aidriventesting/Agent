@@ -7,7 +7,7 @@ from Agent.core.interfaces import ExecutorProtocol
 class ToolCategory(Enum):
     MOBILE = "mobile"
     WEB = "web"
-    VISUAL = "visual"
+    SCREEN = "screen"
 
 
 class BaseTool(ABC):
@@ -35,7 +35,7 @@ class BaseTool(ABC):
     @property
     @abstractmethod
     def category(self) -> ToolCategory:
-        """Tool category: ToolCategory.MOBILE, ToolCategory.WEB, or ToolCategory.VISUAL."""
+        """Tool category: ToolCategory.MOBILE, ToolCategory.WEB, or ToolCategory.SCREEN."""
         pass
     
     @property

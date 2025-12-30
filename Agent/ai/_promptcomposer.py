@@ -202,7 +202,7 @@ class AgentPromptComposer:
         system_content = (
             "You are a mobile app visual verification engine. "
             "Analyze the screenshot and verify if it matches the instruction. "
-            "Use the verify_visual_match function to report your findings."
+            "Use the assert_screen function to report your findings."
         )
         user_content = [
             {"type": "text", "text": f"Verify: {instruction}"},
@@ -214,32 +214,24 @@ class AgentPromptComposer:
             {"role": "user", "content": user_content}
         ]
 
-    def get_visual_check_tools(self) -> List[Dict[str, Any]]:
-        """Return tool definitions for visual check actions from the registry.
-        
-        Returns tool specs in standard format (works with OpenAI, Anthropic, Gemini, etc.)
-        """
-        return self.registry.get_tool_specs(category=ToolCategory.VISUAL)
 
     def compose_ask_messages(
         self,
         question: str,
         screenshot_base64: str,
-        response_format: str = "text",
+        response_format: str = "text"
     ) -> List[Dict[str, Any]]:
-        """Build messages for asking AI about current screen."""
+        """Build messages for asking AI about current screen using tool calling."""
         if response_format == "json":
-            system_content = (
-                "You are a screen analysis assistant. "
-                "Answer questions about what you see in the screenshot. "
-                "IMPORTANT: Always respond with valid JSON only, no markdown, no explanation outside JSON."
-            )
+            instruction = "Use the answer_question_json function to provide your answer as a JSON object."
         else:
-            system_content = (
-                "You are a screen analysis assistant. "
-                "Answer questions about what you see in the screenshot. "
-                "Be concise and direct."
-            )
+            instruction = "Use the answer_question function to provide your answer as text."
+        
+        system_content = (
+            "You are a screen analysis assistant. "
+            "Answer questions about what you see in the screenshot. "
+            f"{instruction}"
+        )
         
         user_content = [
             {"type": "text", "text": question},

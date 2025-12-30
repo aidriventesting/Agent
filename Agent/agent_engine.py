@@ -8,7 +8,9 @@ from Agent.tools.registry import ToolRegistry
 from Agent.tools.base import ToolCategory
 from Agent.core.keyword_runner import KeywordRunner
 from Agent.tools.mobile import MOBILE_TOOLS
-from Agent.tools.visual import VISUAL_TOOLS
+from Agent.tools.screen.answer_text import AnswerTextTool
+from Agent.tools.screen.answer_json import AnswerJsonTool
+from Agent.tools.screen.assert_screen import AssertScreenTool
 from robot.api import logger
 
 
@@ -38,12 +40,15 @@ class AgentEngine:
         self.executor = KeywordRunner(self.platform)
         
         self._register_mobile_tools()
-        self._register_visual_tools()
         
         self.prompt_composer = AgentPromptComposer(
             tool_registry=self.tool_registry,
             platform_connector=self.platform
         )
+        
+        self.tool_registry.register(AnswerTextTool())
+        self.tool_registry.register(AnswerJsonTool())
+        self.tool_registry.register(AssertScreenTool())
         
         self.element_source = element_source
         self.llm_input_format = llm_input_format
@@ -54,12 +59,6 @@ class AgentEngine:
             self.tool_registry.register(ToolClass())
         mobile_tools_count = len(self.tool_registry.get_by_category(ToolCategory.MOBILE))
         logger.debug(f"📱 Registered {mobile_tools_count} mobile tools")
-    
-    def _register_visual_tools(self) -> None:
-        for ToolClass in VISUAL_TOOLS:
-            self.tool_registry.register(ToolClass())
-        visual_tools_count = len(self.tool_registry.get_by_category(ToolCategory.VISUAL))
-        logger.debug(f"👁️ Registered {visual_tools_count} visual tools")
     
     # ----------------------- Public API -----------------------
     
@@ -203,44 +202,44 @@ class AgentEngine:
         self._execute_do_from_tool_calls(result, context, instruction)
         logger.info("Agent.Do completed")
 
-    def visual_check(self, instruction: str) -> None:
+    def visual_check(self, instruction: str, min_confidence: float = 0.7) -> None:
         """Execute visual verification based on natural language instruction.
         
         Args:
             instruction: Natural language verification instruction 
                         (e.g., "verify the home screen is displayed")
+            min_confidence: Minimum confidence score required (0.0-1.0, default 0.7)
         """
-        logger.info(f"👁️ Starting Agent.VisualCheck: '{instruction}'")
+        logger.info(f"👁️ Starting Agent.VisualCheck: '{instruction}' (min_confidence={min_confidence})")
 
         if hasattr(self.platform, 'wait_for_page_stable'):
             self.platform.wait_for_page_stable()
 
         screenshot_base64 = self.platform.get_screenshot_base64()
-        
-        # Embed screenshot to Robot Framework log
         self.platform.embed_image_to_log(screenshot_base64)
-        logger.debug("Screenshot captured and sent to AI for analysis")
+        
         image_url = self.image_uploader.upload_from_base64(screenshot_base64)
-
-        # Prepare AI request
+        
+        tool = self.tool_registry.get_tool_for_query("visual_check")
+        if not tool:
+            raise AssertionError("visual_check tool not found")
+        
         messages = self.prompt_composer.compose_visual_check_messages(instruction, image_url)
-        tools = self.prompt_composer.get_visual_check_tools()
-        logger.debug(f"Visual check tools: {len(tools)} tools")
         
-        if not tools:
-            raise RuntimeError("No visual tools registered. Check tool registration.")
-        
-        # Call AI
         result = self.llm.send_ai_request_with_tools(
             messages=messages,
-            tools=tools,
+            tools=[tool.to_tool_spec()],
             tool_choice="required",
             temperature=0
         )
 
-        logger.debug("Executing visual verification...")
-        self._execute_visual_check_from_tool_calls(result)
-        logger.debug("Agent.VisualCheck completed successfully")
+        tool_call = result.get("tool_calls", [{}])[0]
+        arguments = tool_call.get("function", {}).get("arguments", {})
+        
+        context = {"min_confidence": min_confidence}
+        tool.execute(self.executor, arguments, context)
+        
+        logger.info("Agent.VisualCheck completed")
 
     def ask(self, question: str, response_format: str = "text") -> str:
         """Ask AI a question about the current screen.
@@ -252,8 +251,7 @@ class AgentEngine:
         Returns:
             AI response as string (or JSON string if format=json)
         """
-        import json
-        logger.info(f"❓ Agent.Ask: '{question}'")
+        logger.info(f"❓ Starting Agent.Ask: '{question}' (format: {response_format})")
         
         if hasattr(self.platform, 'wait_for_page_stable'):
             self.platform.wait_for_page_stable()
@@ -261,18 +259,25 @@ class AgentEngine:
         screenshot_base64 = self.platform.get_screenshot_base64()
         self.platform.embed_image_to_log(screenshot_base64)
         
-        messages = self.prompt_composer.compose_ask_messages(
-            question, screenshot_base64, response_format
+        tool = self.tool_registry.get_tool_for_query("ask", response_format=response_format)
+        if not tool:
+            raise AssertionError(f"No tool found for response_format: {response_format}")
+        
+        messages = self.prompt_composer.compose_ask_messages(question, screenshot_base64, response_format)
+        
+        result = self.llm.send_ai_request_with_tools(
+            messages=messages,
+            tools=[tool.to_tool_spec()],
+            tool_choice="required",
+            temperature=0
         )
         
-        if response_format == "json":
-            response_dict = self.llm.send_ai_request_and_return_response(messages=messages, temperature=0)
-            response = json.dumps(response_dict, ensure_ascii=False)
-        else:
-            response = self.llm.send_ai_request(messages=messages, temperature=0)
+        tool_call = result.get("tool_calls", [{}])[0]
+        arguments = tool_call.get("function", {}).get("arguments", {})
         
-        logger.info(f"💬 Response: {response[:100]}..." if len(response) > 100 else f"💬 Response: {response}")
-        return response
+        answer = tool.execute(self.executor, arguments, {})
+        logger.info("Agent.Ask completed")
+        return answer
 
     def find_visual_element(self, description: str, format: str = "center") -> Dict[str, Any]:
         """Find element visually using OmniParser and return bbox.
@@ -358,29 +363,4 @@ class AgentEngine:
         # Execute the tool
         tool.execute(self.executor, arguments, context)
 
-    def _execute_visual_check_from_tool_calls(self, result: Dict[str, Any]) -> None:
-        """Execute visual check from tool calls returned by the LLM using the tool registry."""
-        tool_calls = result.get("tool_calls", [])
-        
-        if not tool_calls:
-            logger.error("No tool calls in visual check response")
-            raise AssertionError("AI did not return any tool calls for visual verification")
-        
-        # Extract the first tool call (typically verify_visual_match)
-        tool_call = tool_calls[0]
-        function_name = tool_call["function"]["name"]
-        arguments = tool_call["function"]["arguments"]
-        
-        logger.debug(f"⚙️ Executing visual tool: {function_name}")
-        
-        # Get tool from registry
-        tool = self.tool_registry.get(function_name)
-        if not tool:
-            raise AssertionError(f"Unknown visual tool: {function_name}")
-        
-        # Prepare context for tool execution (visual tools don't need ui_candidates)
-        context = {}
-        
-        # Execute the visual tool (will handle logging and assertions)
-        tool.execute(self.executor, arguments, context)
 
