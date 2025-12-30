@@ -19,7 +19,7 @@ class ClickElementTool(BaseTool):
     
     @property
     def description(self) -> str:
-        return "CLICK/TAP on ANY visible element (buttons, links, suggestions, icons, list items). USE THIS for all clicking actions."
+        return "CLICK/TAP on visible elements. PREFER elements that contains/englobes CLEAR TEXT/LABELS over icons when possible. Choose the most explicit element (e.g., text suggestions, labeled buttons) rather than ambiguous icons."
     
     @property
     def category(self) -> ToolCategory:
