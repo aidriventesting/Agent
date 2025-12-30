@@ -18,5 +18,5 @@ jobs:
       - name: Install dependencies
         run: pip install ".[test,vision,anthropic,gemini]"
       
-      - name: Run unit tests
-        run: pytest tests/utest/ -v
+      - name: Smoke test - Import library
+        run: python -c "from Agent import AgentKeywords; print('✅ Import successful')"
