@@ -96,14 +96,18 @@ packages = [
     "Agent.core",
     "Agent.platforms",
     "Agent.platforms.collectors",
+    "Agent.platforms.filters",
+    "Agent.platforms.filters.android",
+    "Agent.platforms.grounding",
+    "Agent.platforms.grounding.som",
+    "Agent.platforms.grounding.text",
     "Agent.platforms.locators",
     "Agent.tools",
     "Agent.tools.mobile",
-    "Agent.tools.visual",
+    "Agent.tools.screen",
     "Agent.tools.web",
     "Agent.utilities",
     "Agent.utilities.imguploader",
-    "Agent.tools.screen",
 ]
 
 [tool.setuptools.package-data]
