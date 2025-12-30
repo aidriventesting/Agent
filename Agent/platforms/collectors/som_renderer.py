@@ -44,10 +44,19 @@ def render_som(
     draw = ImageDraw.Draw(overlay)
     
     try:
-        #TODO: fix this for windows and linux ( pixelized font on those OS )
-        font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 14)
-        font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 24)
-    except:
+        import platform
+        system = platform.system()
+        
+        if system == "Darwin":
+            font = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 14)
+            font_large = ImageFont.truetype("/System/Library/Fonts/Helvetica.ttc", 24)
+        elif system == "Windows":
+            font = ImageFont.truetype("arial.ttf", 14)
+            font_large = ImageFont.truetype("arial.ttf", 24)
+        else:
+            font = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 14)
+            font_large = ImageFont.truetype("/usr/share/fonts/truetype/dejavu/DejaVuSans.ttf", 24)
+    except Exception:
         font = ImageFont.load_default()
         font_large = font
     
