@@ -1,7 +1,9 @@
 # Robot Framework Agent
 
 Enable Agent-mode automation. Write natural-language steps; and let the Agent turns them into tool-based UI actions and checks on web and mobile.
+
 [![Watch the demo](https://img.youtube.com/vi/VIDEO_ID/0.jpg)](https://www.youtube.com/watch?v=VIDEO_ID)
+
 [![RoboCon 2026 – What if Robot Framework Had a Brain](https://img.shields.io/badge/RoboCon%202026-What%20if%20Robot%20Framework%20Had%20a%20Brain-orange?style=for-the-badge)](https://www.robocon.io/agenda/helsinki#what-if-robot-framework-have-a-brain)
 
 Alpha — An evolving experiment, with varying levels of maturity across keywords - Not recommended for production yet.
@@ -24,8 +26,6 @@ Login
 
 ```bash
 # Core
-
-https://github.com/user-attachments/assets/c165f9d6-78ed-49ff-b280-dd65f32b0a40
 
 
 pip install robotframework-agent
