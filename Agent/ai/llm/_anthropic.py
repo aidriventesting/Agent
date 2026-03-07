@@ -38,6 +38,8 @@ class AnthropicClient(BaseLLMClient):
         top_p: float = 1.0,
         tools: Optional[List[Dict]] = None,
         tool_choice: Optional[Union[str, Dict]] = None,
+        thinking: Optional[bool] = False,
+        thinking_budget_tokens: Optional[int] = 2048,
         **kwargs
     ):
         try:
@@ -59,12 +61,20 @@ class AnthropicClient(BaseLLMClient):
                 "max_tokens": max_tokens,
                 **kwargs,
             }
+            if thinking:
+                api_params["thinking"] = {
+                    "type": "enabled",
+                    "budget_tokens": thinking_budget_tokens
+                }
             if temperature != 1.0:
                 api_params["temperature"] = temperature
             elif top_p != 1.0:
                 api_params["top_p"] = top_p
             else:
                 api_params["temperature"] = temperature
+
+            if api_params.get("thinking"):
+                api_params["temperature"] = 1
 
             if system_message:
                 api_params["system"] = system_message
